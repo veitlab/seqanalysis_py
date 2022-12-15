@@ -3,11 +3,6 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython import embed
-import pandas as pd
-import scipy.io as sio
-import networkx as nx
-from markovchain import MarkovChain
-import graphviz as gv
 import helper_functions as hf
 import plot_functions as pf
 import re
@@ -64,7 +59,6 @@ for folderidx in range(len(folder)):
     # ---------------------------------------------------------------------------------------------------------------
 
     all_bouts = ''.join(set(all_bouts))
-
     for i in range(len(double_syl)):
         all_bouts = re.sub(double_syl[i], rep_double_syl[i], all_bouts)
 
@@ -92,7 +86,8 @@ for folderidx in range(len(folder)):
 
     tm, tmp = hf.get_transition_matrix(unique_labels[folderidx], bouts)
     tm = tm.astype(int)
-
+    embed()
+    quit()
     # node_size = np.round(np.sum(tm, axis=1)/np.min(np.sum(tm, axis=1)), 2)
     #
     # tmp = np.around(tmp, 2) * 100
