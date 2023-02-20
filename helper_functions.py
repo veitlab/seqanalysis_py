@@ -105,6 +105,7 @@ def get_transition_matrix(unique_labels, bout):
         transM_prob[numbers[idx], numbers[idx + 1]] += 1
 
     transM_prob = (transM_prob.T / np.sum(transM, axis=1)).T
+    transM = transM.astype(int)
 
     return transM, transM_prob
 
