@@ -23,7 +23,7 @@ def plot_transition_matrix(matrix, labels):
 def plot_transition_diagram(matrix, labels, node_size):
     fig, ax = plt.subplots(figsize=(21/2.54,19/2.54))
     fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
-    Graph = nx.from_numpy_matrix(matrix, create_using=nx.DiGraph)
+    Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
     node_labels = dict(zip(Graph, labels))
     # Graph = nx.relabel_nodes(Graph, node_labels)
