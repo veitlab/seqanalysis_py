@@ -7,24 +7,6 @@ import helper_functions as hf
 import plot_functions as pf
 import re
 
-
-def get_node_matrix(matrix, edge_thres):
-    '''
-    calculates the transition probabilities int percent values and sets every edge below the edge_threshold to zero
-    :param
-            matrix: numpy array; matrix of the transition probabilities
-            edge_thres: int; threshold where edges below go to zero
-    :return:
-            matrix: numpy array; same size as input matrix, with probabilities in percent between 0-100
-    '''
-
-    matrix = np.around(matrix, 2) * 100
-    matrix = matrix.astype(int)
-    matrix[matrix < edge_thres] = 0
-
-    return matrix
-
-
 # -------------------------------------------------------------------------------------------------------------------
 # paths
 folder_path = 'D:/Birds/bu01ye01'
@@ -32,7 +14,7 @@ save_path = 'C:/Users/User/Documents/Doktorarbeit/data/bu01ye01/py_data/'
 
 # -------------------------------------------------------------------------------------------------------------------
 # folders to analyse
-folder = ['intan_wav']
+folder = ['screen', 'post_surgery']
 
 # -------------------------------------------------------------------------------------------------------------------
 #
@@ -46,7 +28,8 @@ edge_threshold = 5  # edges < 5 % aren't shown
 
 # -------------------------------------------------------------------------------------------------------------------
 # unique labels; list of labels for each folder
-unique_labels = [['E', 'S', 'I', 'P', 'p', 'j', 'B', 'b', 's', 'H', 'h', 'e', 'G', 'g', 'd', 'F', 'f', 'l', 'c']]
+unique_labels = [['E', 'S', 'I', 'P', 'p', 'j', 'B', 'b', 's', 'H', 'h', 'e', 'G', 'g', 'd', 'F', 'f', 'l', 'c'],
+                 ['E', 'S', 'I', 'P', 'p', 'j', 'B', 'b', 's', 'H', 'h', 'e', 'G', 'g', 'd', 'F', 'f', 'l', 'c', 'k', 'o']]
 
 # -------------------------------------------------------------------------------------------------------------------
 # double syllables, replaces_double_syllables
@@ -56,8 +39,8 @@ chunks = ['pj', 'bs', 'he', 'gd', 'he', 'fl', 'i+', 'c+', 'ES']
 
 # -------------------------------------------------------------------------------------------------------------------
 
-embed()
-quit()
+# embed()
+# quit()
 os.chdir(folder_path)
 
 for folderidx in range(len(folder)):
@@ -81,17 +64,17 @@ for folderidx in range(len(folder)):
     for i in range(len(double_syl)):
         all_bouts = re.sub(double_syl[i], rep_double_syl[i], all_bouts)
 
-    # unique_labels = sorted(list(set(all_bouts)))
-    # # np.save(save_path+folder[folderidx]+'_bouts', all_bouts)
-    # trans_matrix, trans_matrix_prob = hf.get_transition_matrix(unique_labels[folderidx], all_bouts)
-    # node_size = np.round(np.sum(trans_matrix, axis=1)/np.min(np.sum(trans_matrix, axis=1)), 2) * 100
-    #
-    # trans_matrix_prob = get_node_matrix(trans_matrix_prob, edge_threshold)
-    #
-    # 'Plot Transition Matrix and Transition Diagram'
-    # node_labels = unique_labels[folderidx]
-    # # pf.plot_transition_matrix(trans_matrix_prob, node_labels)
-    # pf.plot_transition_diagram(trans_matrix_prob, node_labels, node_size)
+    unique_labels = sorted(list(set(all_bouts)))
+    # np.save(save_path+folder[folderidx]+'_bouts', all_bouts)
+    trans_matrix, trans_matrix_prob = hf.get_transition_matrix(unique_labels, all_bouts)
+    node_size = np.round(np.sum(trans_matrix, axis=1)/np.min(np.sum(trans_matrix, axis=1)), 2) * 100
+
+    trans_matrix_prob = hf.get_node_matrix(trans_matrix_prob, edge_threshold)
+
+    'Plot Transition Matrix and Transition Diagram'
+    node_labels = unique_labels[folderidx]
+    # pf.plot_transition_matrix(trans_matrix_prob, node_labels)
+    pf.plot_transition_diagram(trans_matrix_prob, node_labels, node_size)
 
     # ---------------------------------------------------------------------------------------------------------------
 
@@ -101,8 +84,8 @@ for folderidx in range(len(folder)):
 
     tm, tmp = hf.get_transition_matrix(unique_labels[folderidx], bouts)
     # tm = tm.astype(int)
-    embed()
-    quit()
+    # embed()
+    # quit()
     # node_size = np.round(np.sum(tm, axis=1)/np.min(np.sum(tm, axis=1)), 2)
     #
     # tmp = get_node_matrix(tmp, edge_threshold)
@@ -125,10 +108,10 @@ for folderidx in range(len(folder)):
     node_size = np.round(np.sum(tmd, axis=1)/np.min(np.sum(tmd, axis=1)), 2)*100
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
 
-    tmpd = get_node_matrix(tmpd, edge_threshold)
+    tmpd = hf.get_node_matrix(tmpd, edge_threshold)
 
     ul = np.delete(unique_labels[folderidx], k)
-    ul = ['Start', 'i+', 'pj', 'p', 'bj', 'he', 'gd', 'fl']
+    # ul = ['Start', 'i+', 'pj', 'p', 'bj', 'he', 'gd', 'fl']
 
     'Plot Transition Matrix and Transition Diagram'
     pf.plot_transition_matrix(tmpd, ul)

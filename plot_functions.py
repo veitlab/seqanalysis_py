@@ -1,14 +1,8 @@
-import os
-import glob
-import numpy as np
 import matplotlib.pyplot as plt
-from IPython import embed
-import pandas as pd
-import scipy.io as sio
 import networkx as nx
 
 
-def plot_transition_matrix(matrix, labels):
+def plot_transition_matrix(matrix, labels, save_path, title):
     fig, ax = plt.subplots()
     im = ax.imshow(matrix)
     ax.set_xticks(list(range(len(matrix))))
@@ -16,12 +10,12 @@ def plot_transition_matrix(matrix, labels):
     ax.set_xticklabels(labels)
     ax.set_yticklabels(labels)
     fig.colorbar(im)
-    fig.savefig('matrix.jpg', dpi=300)
+    plt.title(title)
+    fig.savefig(save_path, dpi=300)
 
 
-
-def plot_transition_diagram(matrix, labels, node_size):
-    fig, ax = plt.subplots(figsize=(21/2.54,19/2.54))
+def plot_transition_diagram(matrix, labels, node_size, save_path, title):
+    fig, ax = plt.subplots(figsize=(21 / 2.54, 19 / 2.54))
     fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
@@ -49,4 +43,6 @@ def plot_transition_diagram(matrix, labels, node_size):
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(False)
 
-    fig.savefig('graph.pdf', dpi=300)
+    plt.title(title)
+
+    fig.savefig(save_path, dpi=300)

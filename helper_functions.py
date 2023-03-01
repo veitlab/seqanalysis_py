@@ -1,12 +1,10 @@
-import os
 import glob
 import numpy as np
 import scipy.io as sio
 import re
 
 
-def get_labels(notes):
-    mat_list = glob.glob('*cbin.not.mat')
+def get_labels(mat_list, notes):
     seqs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
@@ -93,7 +91,7 @@ def get_bouts(seqs, bout_string):
     return bouts, noise
 
 
-def get_transition_matrix(unique_labels, bout):
+def get_transition_matrix(bout, unique_labels):
     transM = np.zeros((len(unique_labels), len(unique_labels)))
     transM_prob = np.zeros((len(unique_labels), len(unique_labels)))
 
@@ -119,6 +117,23 @@ def get_node_positions(source_target_list):
     pos = np.column_stack((xpos, np.array(ypos)))
 
     return pos
+
+
+def get_node_matrix(matrix, edge_thres):
+    '''
+    calculates the transition probabilities int percent values and sets every edge below the edge_threshold to zero
+    :param
+            matrix: numpy array; matrix of the transition probabilities
+            edge_thres: int; threshold where edges below go to zero
+    :return:
+            matrix: numpy array; same size as input matrix, with probabilities in percent between 0-100
+    '''
+
+    matrix = np.around(matrix, 2) * 100
+    matrix = matrix.astype(int)
+    matrix[matrix < edge_thres] = 0
+
+    return matrix
 
 def findMaximalNonBranchingPaths(Graph):
     paths = []

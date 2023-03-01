@@ -1,139 +1,101 @@
-import os
-import glob
-import numpy as np
-import matplotlib.pyplot as plt
-from IPython import embed
-import helper_functions as hf
-import plot_functions as pf
 import re
+import sys
+import glob
+import yaml
+import numpy as np
+import plot_functions as pf
+import helper_functions as hf
+import matplotlib.pyplot as plt
 
-# -------------------------------------------------------------------------------------------------------------------
-# paths
-folder_path = 'D:/Birds/wh45wh40'
-save_path = 'C:/Users/User/Documents/Doktorarbeit/data/wh45wh40/py_data/'
-
-# -------------------------------------------------------------------------------------------------------------------
-# folders to analyse
-folder = ['recovery1']
-# folder = ['screen', 'target_a2', 'recovery1']
-
-# -------------------------------------------------------------------------------------------------------------------
-#
-bout_chunk = 'dmm' # chunk has to be in a bout to be analysed as a bout
-intro_notes = ['S', 'E', 'l', 'k']  # all intro nodes are replaced by 'i',
-                                    # 'S' and 'E' have to be in the list so that the code works
-
-# -------------------------------------------------------------------------------------------------------------------
-# constants
-edge_threshold = 5  # edges < 5 % aren't shown
-
-# -------------------------------------------------------------------------------------------------------------------
-# unique labels; list of labels for each folder
-unique_labels = [['S', 'I', 'D', 'd', 'm', 'o', 'A', 'a', 'f', 'c', 'L', 'K', 'H', 'h', 'r', 'e', 'g', 'j', 'S', 's', 'n', 'p', 'E'],
-                 ['S', 'I', 'D', 'd', 'm', 'o', 'A', 'a', 'f', 'c', 'L', 'K', 'H', 'h', 'r', 'e', 'g', 'b', 'j', 'S', 's', 'n', 'p', 'E'],
-                 ['S', 'I', 'D', 'd', 'm', 'o', 'A', 'a', 'f', 'c', 'L', 'K', 'H', 'h', 'r', 'e', 'g', 'j', 'S', 's', 'n', 'p', 'E']]
-
-# -------------------------------------------------------------------------------------------------------------------
-# double syllables, replaces_double_syllables
-double_syl = ['mm', 'nn', 'hhc', 'jj', 'bj']
-rep_double_syl = ['mo', 'np', 'hre', 'js', 'bs']
-chunks = ['dmo', 'afc', 'hreg', 'snp', 'i+', 'l+', 'k+', 'ES']
-
-# -------------------------------------------------------------------------------------------------------------------
+from IPython import embed
 
 
-os.chdir(folder_path)
+def get_data(cfg):
+    file_list = glob.glob(cfg['paths']['folder_path'] + '/*/*.not.mat')
 
-for folderidx in range(len(folder)):
-    os.chdir(folder[folderidx])
-    print(os.getcwd())
-    days = [d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
+    seqs = hf.get_labels(file_list, cfg['labels']['intro_notes'])
+    cfg['data']['bouts'], cfg['data']['noise'] = hf.get_bouts(seqs, cfg['labels']['bout_chunk'])
 
-    all_bouts = []
+    for i in range(len(cfg['labels']['double_syl'])):
+        cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i], cfg['labels']['double_syl_rep'][i], cfg['data']['bouts'])
 
-    for dayidx in range(len(days)):
-        os.chdir(days[dayidx])
-        print(os.getcwd())
-        seqs = hf.get_labels(intro_notes)
-        bouts, _ = hf.get_bouts(seqs, bout_chunk)
-        all_bouts.append(bouts)
-        os.chdir('..')
+    cfg['data']['chunk_bouts'] = hf.replace_chunks(cfg['data']['bouts_rep'], cfg['labels']['chunks'])
+
+    return cfg
+
+
+def make_first_plots(cfg):
+    bouts = cfg['data']['bouts_rep']
+    tm, _ = hf.get_transition_matrix(bouts, cfg['labels']['unique_labels'])
 
     # ---------------------------------------------------------------------------------------------------------------
-
-    all_bouts = ''.join(set(all_bouts))
-    # unique_labels = sorted(list(set(all_bouts)))
-
-    for i in range(len(double_syl)):
-        all_bouts = re.sub(double_syl[i], rep_double_syl[i], all_bouts)
-
-    np.save(save_path+folder[folderidx]+'_bouts', all_bouts)
-    # trans_matrix, trans_matrix_prob = hf.get_transition_matrix(unique_labels[folderidx], all_bouts)
-    # node_size = np.round(np.sum(trans_matrix, axis=1)/np.min(np.sum(trans_matrix, axis=1)), 2) * 100
-    #
-    # trans_matrix_prob = np.around(trans_matrix_prob, 2) * 100
-    # trans_matrix_prob = trans_matrix_prob.astype(int)
-    # trans_matrix_prob[trans_matrix_prob < edge_threshold] = 0
-    #
-    # 'Plot Transition Matrix and Transition Diagram'
-    # node_labels = unique_labels[folderidx]
-    # # pf.plot_transition_matrix(trans_matrix_prob, node_labels)
-    # pf.plot_transition_diagram(trans_matrix_prob, node_labels, node_size)
-
-    # ---------------------------------------------------------------------------------------------------------------
-
-    bouts = hf.replace_chunks(all_bouts, chunks)
-
-    # ToDo: put them in a good order, based on the best succession
-    # unique_labels = sorted(list(set(bouts)))
-    # unique_labels = ['S', 'I', 'D', 'd', 'm', 'o', 'A', 'a', 'f', 'c', 'L', 'K', 'H', 'h', 'r', 'e', 'g', 'b', 'j', 'S', 's', 'n', 'p', 'E']
-
-    tm, tmp = hf.get_transition_matrix(unique_labels[folderidx], bouts)
-    tm = tm.astype(int)
-
-    # node_size = np.round(np.sum(tm, axis=1)/np.min(np.sum(tm, axis=1)), 2)
-    #
-    # tmp = np.around(tmp, 2) * 100
-    # tmp = tmp.astype(int)
-    # tmp[tmp < edge_threshold] = 0
-
-    'Plot Transition Matrix and Transition Diagram'
-    # pf.plot_transition_matrix(tmp, unique_labels)
-    # pf.plot_transition_diagram(tmp, unique_labels, node_size)
-
-    # embed()
-    # quit()
-    # ---------------------------------------------------------------------------------------------------------------
-
-    'Plot Transition Matrix and Transition Diagram'
-    # pf.plot_transition_matrix(tm, unique_labels)
-
-    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= 1)
+    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= 0)
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
 
-    node_size = np.round(np.sum(tmd, axis=1)/np.min(np.sum(tmd, axis=1)), 2)*100
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
-
-    tmpd = np.around(tmpd, 2) * 100
-    tmpd = tmpd.astype(int)
-    tmpd[tmpd < edge_threshold] = 0
-
-    ul = np.delete(unique_labels[folderidx], k)
-    # ul = ['i+', 'dmm', 'afc', 'l+', 'k+', 'hhcg', 'b', 'jnn', 'Start']
-
+    tmpd = hf.get_node_matrix(tmpd, cfg['constants']['edge_threshold'])
     'Plot Transition Matrix and Transition Diagram'
-    # pf.plot_transition_matrix(tmpd, ul)
-    pf.plot_transition_diagram(tmpd, ul, node_size*5)
-    plt.title(folder[folderidx])
-
-    os.chdir('..')
-
-
-plt.show()
-
-embed()
-quit()
+    node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
+    pf.plot_transition_diagram(tmpd, np.delete(cfg['labels']['unique_labels'], k),
+                               node_size,
+                               cfg['paths']['save_path']+cfg['title_figures']+'_graph_simple.jpg',
+                               cfg['title_figures'])
+    plt.show()
 
 
+def make_final_plots(cfg):
+    bouts = cfg['data']['chunk_bouts']
+    tm, tmp = hf.get_transition_matrix(bouts, cfg['labels']['unique_labels'])
 
+    # ---------------------------------------------------------------------------------------------------------------
+    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg['constants']['node_threshold'])
+    tmd = np.delete(tm, k, axis=1)
+    tmd = np.delete(tmd, k, axis=0)
+
+    tmpd = (tmd.T / np.sum(tmd, axis=1)).T
+    tmpd = hf.get_node_matrix(tmpd, cfg['constants']['edge_threshold'])
+    'Plot Transition Matrix and Transition Diagram'
+    pf.plot_transition_matrix(tmpd,
+                              cfg['labels']['node_labels'],
+                              cfg['paths']['save_path'] + cfg['title_figures'] + '_matrix.jpg',
+                              cfg['title_figures'])
+    pf.plot_transition_diagram(tmpd,
+                               cfg['labels']['node_labels'],
+                               np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 500,
+                               cfg['paths']['save_path']+cfg['title_figures']+'_graph.jpg',
+                               cfg['title_figures'])
+    plt.show()
+
+
+def main(yaml_file):
+
+    with open(yaml_file) as f:
+        cfg = yaml.load(f, Loader=yaml.FullLoader)
+        f.close()
+
+    if not cfg['data']['bouts']:
+        cfg = get_data(cfg)
+        make_first_plots(cfg)
+
+    else:
+        make_final_plots(cfg)
+
+    with open(yaml_file, 'w') as f:
+        yaml.dump(cfg, f)
+        f.close()
+    # embed()
+    # quit()
+
+
+
+if __name__ == '__main__':
+    # this script plots transition matrix and diagrams
+    #
+    # INPUT:
+    # sys.argv[1] = yaml file of the bird, example: example_yaml.yaml
+    #
+    # OUTPUT:
+    # figures
+
+    main(sys.argv[1])
