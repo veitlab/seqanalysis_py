@@ -79,6 +79,6 @@ labels:
 # save_path: where the figures should be saved, !!! last slash is very important !!!
 # title_figures: title for both figures is the same
 paths:
-  folder_path: D:/Birds/bu01ye01/post_surgery
+  folder_path: D:/Birds/bu01ye01/post_surgery/*/*.cbin.not.mat
   save_path: C:/Users/User/Documents/Doktorarbeit/data/bu01ye01/py_data/
 title_figures: bu01ye01_postsurgery

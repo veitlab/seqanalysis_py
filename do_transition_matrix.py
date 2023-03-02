@@ -11,7 +11,7 @@ from IPython import embed
 
 
 def get_data(cfg):
-    file_list = glob.glob(cfg['paths']['folder_path'] + '/*/*.not.mat')
+    file_list = glob.glob(cfg['paths']['folder_path'])
 
     seqs = hf.get_labels(file_list, cfg['labels']['intro_notes'])
     cfg['data']['bouts'], cfg['data']['noise'] = hf.get_bouts(seqs, cfg['labels']['bout_chunk'])
@@ -83,6 +83,7 @@ def main(yaml_file):
 
     with open(yaml_file, 'w') as f:
         yaml.dump(cfg, f)
+        print(yaml.dump(cfg))
         f.close()
     # embed()
     # quit()
