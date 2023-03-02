@@ -52,6 +52,7 @@ def make_final_plots(cfg):
     k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg['constants']['node_threshold'])
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
+    print(np.delete(cfg['labels']['unique_labels'], k))
 
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg['constants']['edge_threshold'])
@@ -77,13 +78,15 @@ def main(yaml_file):
     if not cfg['data']['bouts']:
         cfg = get_data(cfg)
         make_first_plots(cfg)
+        print('\n Unique labels of Chunks: {}\n'.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
 
     else:
+        # print('{} Unique labels of Chunks: '.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
         make_final_plots(cfg)
 
     with open(yaml_file, 'w') as f:
         yaml.dump(cfg, f)
-        print(yaml.dump(cfg))
+        # print(yaml.dump(cfg))
         f.close()
     # embed()
     # quit()
