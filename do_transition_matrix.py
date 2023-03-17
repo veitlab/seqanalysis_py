@@ -10,6 +10,33 @@ import matplotlib.pyplot as plt
 from IPython import embed
 
 
+def get_catch_data(cfg):
+
+    file_list = []
+    list = glob.glob(cfg['paths']['catch_path'])
+    for i in range(len(list)):
+        with open(list[i]+cfg['paths']['catch_file'], 'r') as file:
+            line_list = file.readlines()
+            file_list.extend([list[i]+item.rstrip()+'.not.mat' for item in line_list])
+
+    seqs = hf.get_labels(file_list, cfg['labels']['intro_notes'])
+    cfg['data']['bouts'], cfg['data']['noise'] = hf.get_bouts(seqs, cfg['labels']['bout_chunk'])
+
+    for i in range(len(cfg['labels']['double_syl'])):
+        if i == 0:
+            cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i],
+                                              cfg['labels']['double_syl_rep'][i],
+                                              cfg['data']['bouts'])
+        else:
+            cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i],
+                                              cfg['labels']['double_syl_rep'][i],
+                                              cfg['data']['bouts_rep'])
+
+    cfg['data']['chunk_bouts'] = hf.replace_chunks(cfg['data']['bouts_rep'], cfg['labels']['chunks'])
+
+    return cfg
+
+
 def get_data(cfg):
     file_list = glob.glob(cfg['paths']['folder_path'])
 
@@ -17,7 +44,14 @@ def get_data(cfg):
     cfg['data']['bouts'], cfg['data']['noise'] = hf.get_bouts(seqs, cfg['labels']['bout_chunk'])
 
     for i in range(len(cfg['labels']['double_syl'])):
-        cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i], cfg['labels']['double_syl_rep'][i], cfg['data']['bouts'])
+        if i == 0:
+            cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i],
+                                              cfg['labels']['double_syl_rep'][i],
+                                              cfg['data']['bouts'])
+        else:
+            cfg['data']['bouts_rep'] = re.sub(cfg['labels']['double_syl'][i],
+                                              cfg['labels']['double_syl_rep'][i],
+                                              cfg['data']['bouts_rep'])
 
     cfg['data']['chunk_bouts'] = hf.replace_chunks(cfg['data']['bouts_rep'], cfg['labels']['chunks'])
 
@@ -69,14 +103,18 @@ def make_final_plots(cfg):
     plt.show()
 
 
-def main(yaml_file):
+def main(yaml_file, analyse_files):
 
     with open(yaml_file) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
 
     if not cfg['data']['bouts']:
-        cfg = get_data(cfg)
+        if analyse_files == 'all':
+            cfg = get_data(cfg)
+        elif analyse_files == 'catch':
+            cfg = get_catch_data(cfg)
+
         make_first_plots(cfg)
         print('\n Unique labels of Chunks: {}\n'.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
 
@@ -98,8 +136,9 @@ if __name__ == '__main__':
     #
     # INPUT:
     # sys.argv[1] = yaml file of the bird, example: example_yaml.yaml
+    # sys.argv[2] = analysis catch or all files: input: catch, all
     #
     # OUTPUT:
     # figures
 
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
