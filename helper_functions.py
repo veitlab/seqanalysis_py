@@ -13,7 +13,10 @@ def get_labels(mat_list, notes):
         labels = 'S' + labels + 'E'
 
         if len(notes) > 0:
-            labels = replace_intro_notes(labels, notes)
+            try:
+                labels = replace_intro_notes(labels, notes)
+            except:
+                print(matidx)
 
         seqs.append(labels)
     seqs = np.array(seqs)
