@@ -73,7 +73,7 @@ def make_first_plots(cfg):
     node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
     pf.plot_transition_diagram(tmpd, np.delete(cfg['labels']['unique_labels'], k),
                                node_size,
-                               cfg['paths']['save_path']+cfg['title_figures']+'_graph_simple.jpg',
+                               cfg['paths']['save_path']+cfg['title_figures']+'_graph_simple.pdf',
                                cfg['title_figures'])
     plt.show()
 
@@ -93,12 +93,12 @@ def make_final_plots(cfg):
     'Plot Transition Matrix and Transition Diagram'
     pf.plot_transition_matrix(tmpd,
                               cfg['labels']['node_labels'],
-                              cfg['paths']['save_path'] + cfg['title_figures'] + '_matrix.jpg',
+                              cfg['paths']['save_path'] + cfg['title_figures'] + '_matrix.pdf',
                               cfg['title_figures'])
     pf.plot_transition_diagram(tmpd,
                                cfg['labels']['node_labels'],
                                np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 500,
-                               cfg['paths']['save_path']+cfg['title_figures']+'_graph.jpg',
+                               cfg['paths']['save_path']+cfg['title_figures']+'_graph.pdf',
                                cfg['title_figures'])
     plt.show()
 
