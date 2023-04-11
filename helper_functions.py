@@ -111,6 +111,22 @@ def get_transition_matrix(bout, unique_labels):
     return transM, transM_prob
 
 
+def get_transition_matrix_befor_following_syl(bout, unique_lables):
+    transM_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
+    transM_prob_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
+    alphabet = {letter: index for index, letter in enumerate(unique_lables)}
+    numbers = [alphabet[character] for character in bout if character in alphabet]
+
+    for idx in range(1, len(numbers) - 1, 1):
+        transM_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
+        transM_prob_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
+
+    transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
+    transM_bsf = transM_bsf.astype(int)
+
+    return transM_bsf, transM_prob_bsf
+
+
 def get_node_positions(source_target_list):
     xpos = np.array([int(string[0]) for string in source_target_list])
     ypos = np.zeros(len(xpos))
@@ -138,6 +154,7 @@ def get_node_matrix(matrix, edge_thres):
 
     return matrix
 
+
 def findMaximalNonBranchingPaths(Graph):
     paths = []
     nodes1in1out = set()  # 1-in-1-out nodes
@@ -150,7 +167,6 @@ def findMaximalNonBranchingPaths(Graph):
 
         else:
             nodes1in1out.add(v)
-
 
     for v in nodes1in1out:
         if v not in nExplored:
