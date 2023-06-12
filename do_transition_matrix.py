@@ -97,7 +97,7 @@ def make_final_plots(cfg):
                               cfg['title_figures'])
     pf.plot_transition_diagram(tmpd,
                                cfg['labels']['node_labels'],
-                               np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 500,
+                               np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100,
                                cfg['paths']['save_path']+cfg['title_figures']+'_graph.pdf',
                                cfg['title_figures'])
     plt.show()
