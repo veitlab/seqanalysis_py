@@ -12,6 +12,7 @@ from IPython import embed
 
 def get_catch_data(cfg):
 
+    # assembles the files in the path
     file_list = []
     list = glob.glob(cfg['paths']['catch_path'])
     for i in range(len(list)):
@@ -97,7 +98,7 @@ def make_final_plots(cfg):
                               cfg['title_figures'])
     pf.plot_transition_diagram(tmpd,
                                cfg['labels']['node_labels'],
-                               np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100,
+                               np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 500,
                                cfg['paths']['save_path']+cfg['title_figures']+'_graph.pdf',
                                cfg['title_figures'])
     plt.show()

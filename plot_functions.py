@@ -21,7 +21,6 @@ def plot_transition_matrix(matrix, labels, save_path, title):
     ax.tick_params(left=False, bottom=False)
     sns.despine(top=False, right=False, left=False, bottom=False)
     ax.set_title(title)
-    plt.show()
     fig.savefig(save_path, dpi=300)
 
 
@@ -37,7 +36,7 @@ def plot_transition_diagram(matrix, labels, node_size, save_path, title):
     positions = nx.circular_layout(Graph)
 
     # ToDo: nodes
-    nx.draw_networkx_nodes(Graph, pos=positions, node_size=node_size, ax=ax, alpha=0.7)
+    nx.draw_networkx_nodes(Graph, pos=positions, node_size=node_size, node_color="tab:orange", ax=ax, alpha=0.9)
     nx.draw_networkx_labels(Graph, pos=positions, labels=node_labels)
     # google networkx drawing to get better graphs with networkx
     # nx.draw(Graph, pos=positions, node_size=node_size, label=labels, with_labels=True, ax=ax)
@@ -45,7 +44,7 @@ def plot_transition_diagram(matrix, labels, node_size, save_path, title):
     edge_width = [x / 20 for x in [*edge_labels.values()]]
     nx.draw_networkx_edges(Graph, pos=positions, node_size=node_size, width=edge_width,
                            arrows=True, arrowsize=20,
-                           min_target_margin=25, min_source_margin=10, connectionstyle="arc3,rad=0.3",
+                           min_target_margin=25, min_source_margin=10, connectionstyle="arc3,rad=0.2",
                            ax=ax)
     nx.draw_networkx_edge_labels(Graph, positions, label_pos=0.5, edge_labels=edge_labels, ax=ax, rotate=False)
 
@@ -57,6 +56,6 @@ def plot_transition_diagram(matrix, labels, node_size, save_path, title):
     plt.title(title)
 
     fig.savefig(save_path, dpi=300)
-
-    embed()
-    quit()
+    #
+    # embed()
+    # quit()
