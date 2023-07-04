@@ -24,7 +24,7 @@ def plot_transition_matrix(matrix, labels, save_path, title):
     fig.savefig(save_path, dpi=300)
 
 
-def plot_transition_diagram(matrix, labels, node_size, save_path, title):
+def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, title):
     fig, ax = plt.subplots(figsize=(21 / 2.54, 19 / 2.54))
     fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
@@ -41,7 +41,8 @@ def plot_transition_diagram(matrix, labels, node_size, save_path, title):
     # google networkx drawing to get better graphs with networkx
     # nx.draw(Graph, pos=positions, node_size=node_size, label=labels, with_labels=True, ax=ax)
     # ToDo: edges
-    edge_width = [x / 20 for x in [*edge_labels.values()]]
+    edge_width = [x / edge_width for x in [*edge_labels.values()]]
+    embed()
     nx.draw_networkx_edges(Graph, pos=positions, node_size=node_size, width=edge_width,
                            arrows=True, arrowsize=20,
                            min_target_margin=25, min_source_margin=10, connectionstyle="arc3,rad=0.2",

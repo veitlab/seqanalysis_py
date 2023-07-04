@@ -5,7 +5,9 @@
 # node_threshold: nodes under the threshold won't be shown
 constants:
   edge_threshold: 5
+  edge_width: 10
   node_threshold: 1
+  node_size: 500
 # bouts: raw data must be one string
 # bouts_rep: data where I replace one syllable label with another syllable label,
 # chunk_bouts: data where chunks where replaced,
