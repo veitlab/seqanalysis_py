@@ -5,13 +5,7 @@ import matplotlib.pyplot as plt
 
 from IPython import embed
 
-
-# im = ax.imshow(matrix)
-# ax.set_xticks(list(range(len(matrix))))
-# ax.set_yticks(list(range(len(matrix))))
-# ax.set_xticklabels(labels)
-# ax.set_yticklabels(labels)
-# fig.colorbar(im)
+plt.rcParams['svg.fonttype'] = 'none'  # this is so that svg figures save text as text and not the single letters
 
 def plot_transition_matrix(matrix, labels, save_path, title):
     fig, ax = plt.subplots()
@@ -42,7 +36,6 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     # nx.draw(Graph, pos=positions, node_size=node_size, label=labels, with_labels=True, ax=ax)
     # ToDo: edges
     edge_width = [x / edge_width for x in [*edge_labels.values()]]
-    embed()
     nx.draw_networkx_edges(Graph, pos=positions, node_size=node_size, width=edge_width,
                            arrows=True, arrowsize=20,
                            min_target_margin=25, min_source_margin=10, connectionstyle="arc3,rad=0.2",

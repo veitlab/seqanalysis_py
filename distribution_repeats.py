@@ -17,11 +17,11 @@ def get_data(path, intro_notes, bout_chunk):
     return bouts
 
 
-def main(folder_path, folder, syl, labels):
+def main(folder_path, folder, syl, labels, bout_chunk):
 
     folder_lengths = []
     for folder_idx in range(len(folder)):
-        bouts = get_data(folder_path+folder[folder_idx]+'/*cbin.not.mat', ['E', 'S'], 'f')
+        bouts = get_data(folder_path+folder[folder_idx]+'/*/*cbin.not.mat', ['E', 'S'], bout_chunk)
         all_b = re.findall(syl, bouts)
         lengths = [len(item)-1 for item in all_b]
         folder_lengths.append(lengths)
@@ -61,10 +61,11 @@ if __name__ == '__main__':
     #
     # OUTPUT:
     # figures
-    syllable = 'db+'
-    path = 'D:/GP2022/data/or05pk04/'
-    labels = ['Before training', 'After training']
+    syllable = 'b+'
+    path = 'D:/Birds/screening/'
+    labels = ['b+']
+    bout_chunk = 'g'
 
-    folders = ['label_or/221114_bp', 'label_or/221121_lastbase']
+    folders = ['pk02gr02']
 
-    main(path, folders, syllable, labels)
+    main(path, folders, syllable, labels, bout_chunk)
