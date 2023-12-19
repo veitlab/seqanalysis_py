@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # figures
     syllable = 'b+'
     path = 'D:/Birds/screening/'
-    labels = ['b+']
+    labels = [f'{syllable}']
     bout_chunk = 'g'
 
     folders = ['pk02gr02']

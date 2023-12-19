@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../Intan_code/.idea/Intan_code.iml" filepath="$PROJECT_DIR$/../Intan_code/.idea/Intan_code.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../data_sorting_Intan/.idea/data_sorting_Intan.iml" filepath="$PROJECT_DIR$/../data_sorting_Intan/.idea/data_sorting_Intan.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/seqanalysis_py.iml" filepath="$PROJECT_DIR$/.idea/seqanalysis_py.iml" />
     </modules>
   </component>
