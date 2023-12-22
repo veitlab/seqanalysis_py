@@ -8,6 +8,7 @@ import helper_functions as hf
 import matplotlib.pyplot as plt
 from IPython import embed
 
+
 def get_data(path, intro_notes, bout_chunk):
     file_list = glob.glob(path)
 
@@ -18,33 +19,40 @@ def get_data(path, intro_notes, bout_chunk):
 
 
 def main(folder_path, folder, syl, labels, bout_chunk):
-
     folder_lengths = []
     for folder_idx in range(len(folder)):
-        bouts = get_data(folder_path+folder[folder_idx]+'/*/*cbin.not.mat', ['E', 'S'], bout_chunk)
+        bouts = get_data(
+            folder_path + "/*cbin.not.mat",
+            ["E", "S"],
+            bout_chunk,
+        )
         all_b = re.findall(syl, bouts)
-        lengths = [len(item)-1 for item in all_b]
+        lengths = [len(item) - 2 for item in all_b]
         folder_lengths.append(lengths)
 
     max_steps = np.max(np.hstack(folder_lengths))
-    steps = np.linspace(0,max_steps+1,max_steps+2)
+    steps = np.linspace(0, max_steps + 1, max_steps + 2)
 
     fig1, ax1 = plt.subplots(1, 1, figsize=(21 / 2.54, 12 / 2.54), sharex=True)
-    fig1.subplots_adjust(left=0.13, bottom=0.17, top=0.99, right=0.99, wspace=0.5, hspace=0.7)
+    fig1.subplots_adjust(
+        left=0.13, bottom=0.17, top=0.99, right=0.99, wspace=0.5, hspace=0.7
+    )
 
     for plot_idx in range(len(folder_lengths)):
         counts, bins = np.histogram(folder_lengths[plot_idx], steps)
 
-        ax1.plot(bins[:-1], counts/np.sum(counts), label=labels[plot_idx], linewidth=4)
+        ax1.plot(
+            bins[:-1], counts / np.sum(counts), label=labels[plot_idx], linewidth=4
+        )
 
-    ax1.set_xlabel('Repeat number', fontsize=25)
-    ax1.set_ylabel('Rel. frequency', fontsize=25)
-    plt.rcParams['font.size'] = 25
-    plt.rcParams['axes.linewidth'] = 2
+    ax1.set_xlabel("Repeat number", fontsize=25)
+    ax1.set_ylabel("Rel. frequency", fontsize=25)
+    plt.rcParams["font.size"] = 25
+    plt.rcParams["axes.linewidth"] = 2
     ax1.spines["top"].set_visible(False)
     ax1.spines["right"].set_visible(False)
     ax1.tick_params(width=2)
-    ax1.tick_params(axis='both', which='major', labelsize=20)
+    ax1.tick_params(axis="both", which="major", labelsize=20)
     plt.legend()
     plt.show()
 
@@ -52,7 +60,7 @@ def main(folder_path, folder, syl, labels, bout_chunk):
     quit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # this script plots transition matrix and diagrams
     #
     # INPUT:
@@ -61,11 +69,13 @@ if __name__ == '__main__':
     #
     # OUTPUT:
     # figures
-    syllable = 'b+'
-    path = 'D:/Birds/screening/'
-    labels = ['b+']
-    bout_chunk = 'g'
+    syllable = "fj?+k+b"
+    path = (
+        "C:/Users/awendt/Documents/Masterthesis/data/ye01pu08_tweetynet/training_data/"
+    )
+    labels = [f"{syllable}"]
+    bout_chunk = "bchg"
 
-    folders = ['pk02gr02']
+    folders = ["C:/Users/awendt/Documents/Masterthesis/transition_matrix/ye01pu08/"]
 
     main(path, folders, syllable, labels, bout_chunk)

@@ -1,0 +1,69 @@
+constants:
+  edge_threshold: 5
+  edge_width: 10
+  node_size: 500
+  node_threshold: 1
+data:
+  bouts: 
+  bouts_rep: 
+  chunk_bouts: 
+  noise: 
+labels:
+  bout_chunk: gkl
+  chunks:
+  - gkl
+  - bs
+  - ES
+  - i+
+  - n+
+  - wj
+  double_syl:
+  - bb
+  - hj
+  double_syl_rep:
+  - bs
+  - wj
+  intro_notes:
+  - S
+  - E
+  - f
+  - d
+  - e
+  - n
+  node_labels:
+  - Start
+  - i+
+  - w
+  - j
+  - h
+  - gkl
+  - g
+  - k
+  - l
+  - m
+  - c
+  - bb
+  unique_labels:
+  - E
+  - S
+  - I
+  - i
+  - N
+  - n
+  - W
+  - w
+  - j
+  - h
+  - G
+  - g
+  - k
+  - l
+  - m
+  - c
+  - B
+  - b
+  - s
+paths:
+  folder_path: C:/Users/awendt/Documents/Masterthesis/data/ye00pu07_tweetynet/training_data/*cbin.not.mat
+  save_path: C:/Users/awendt/Documents/Masterthesis/transition_matrix/ye00pu07/
+title_figures: ye00pu07_screening_alone

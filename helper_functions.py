@@ -2,6 +2,7 @@ import glob
 import numpy as np
 import scipy.io as sio
 import re
+from IPython import embed
 
 
 def get_labels(mat_list, notes):
@@ -9,14 +10,14 @@ def get_labels(mat_list, notes):
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
 
-        labels = mat['labels'][0]
-        labels = 'S' + labels + 'E'
+        labels = mat["labels"][0]
+        labels = "S" + labels + "E"
 
         if len(notes) > 0:
             try:
                 labels = replace_intro_notes(labels, notes)
-            except:
-                print(matidx)
+            except ValueError:
+                print("Intro notes not found in file: " + matidx)
 
         seqs.append(labels)
     seqs = np.array(seqs)
@@ -36,9 +37,9 @@ def replace_intro_notes(s, intro_notes):
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
-        temp[i] = 'i'
+        temp[i] = "i"
 
-    s = ''.join(temp)
+    s = "".join(temp)
 
     return s
 
@@ -47,18 +48,20 @@ def replace_chunks(s, chunks):
     # ToDo: was wenn diechunks mit dem selben buchstaben beginnen?
 
     for i in range(len(chunks)):
+        embed()
+        exit()
         s = re.sub(chunks[i], chunks[i][0].upper(), s)
 
     return s
 
 
 def get_syl_dur():
-    mat_list = glob.glob('*cbin.not.mat')
+    mat_list = glob.glob("*cbin.not.mat")
     durs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
 
-        dur = mat['offsets'] - mat['onsets']
+        dur = mat["offsets"] - mat["onsets"]
         durs.append(dur)
 
     durs = np.array(durs)
@@ -67,12 +70,12 @@ def get_syl_dur():
 
 
 def get_gap_dur():
-    mat_list = glob.glob('*cbin.not.mat')
+    mat_list = glob.glob("*cbin.not.mat")
     durs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
 
-        dur = mat['onsets'][1:] - mat['offsets'][:-1]
+        dur = mat["onsets"][1:] - mat["offsets"][:-1]
         durs.append(dur)
 
     durs = np.array(durs)
@@ -81,8 +84,8 @@ def get_gap_dur():
 
 
 def get_bouts(seqs, bout_string):
-    bouts = ''
-    noise = ''
+    bouts = ""
+    noise = ""
     for seqsidx in range(len(seqs)):
         if seqs[seqsidx].find(bout_string) >= 0:
             bouts = bouts + seqs[seqsidx]
@@ -113,7 +116,9 @@ def get_transition_matrix(bout, unique_labels):
 
 def get_transition_matrix_befor_following_syl(bout, unique_lables):
     transM_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
-    transM_prob_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
+    transM_prob_bsf = np.zeros(
+        (len(unique_lables), len(unique_lables), len(unique_lables))
+    )
     alphabet = {letter: index for index, letter in enumerate(unique_lables)}
     numbers = [alphabet[character] for character in bout if character in alphabet]
 
@@ -139,14 +144,14 @@ def get_node_positions(source_target_list):
 
 
 def get_node_matrix(matrix, edge_thres):
-    '''
+    """
     calculates the transition probabilities int percent values and sets every edge below the edge_threshold to zero
     :param
             matrix: numpy array; matrix of the transition probabilities
             edge_thres: int; threshold where edges below go to zero
     :return:
             matrix: numpy array; same size as input matrix, with probabilities in percent between 0-100
-    '''
+    """
 
     matrix = np.around(matrix, 2) * 100
     matrix = matrix.astype(int)
