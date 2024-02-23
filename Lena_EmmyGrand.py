@@ -15,6 +15,8 @@ plt.rcParams['font.size'] = 18
 plt.rcParams['axes.linewidth'] = 2
 plt.rcParams['xtick.major.width'] = 2
 plt.rcParams['ytick.major.width'] = 2
+plt.rcParams['axes.spines.right'] = False
+plt.rcParams['axes.spines.top'] = False
 
 file_path = 'Z:/Gulnurs_Project/pk02gr02/exp1_target_g_with_gci/230728/*.cbin.not.mat'
 syllable = ['(?<=[^gMNO])gg+[N]g*(?<![^gMNO])', '(?<=[^gMNO])gg+[O]g*(?<![^gMNO])',
@@ -46,6 +48,7 @@ ax1.spines["right"].set_visible(False)
 ax1.tick_params(width=2)
 ax1.tick_params(axis='both', which='major', labelsize=18)
 plt.legend()
+fig1.savefig(f'figures\\pk02gr02_dist_0to10_repeats.svg')
 plt.show()
 # ----------------------------------------------------------------------------------------------------------------------
 fig1, ax1 = plt.subplots(1, 1, figsize=(21 / 2.54, 12 / 2.54), sharex=True)
@@ -60,7 +63,7 @@ ax1.spines["right"].set_visible(False)
 ax1.tick_params(width=2)
 ax1.tick_params(axis='both', which='major', labelsize=18)
 plt.legend()
-# fig1.savefig(f'..\\..\\..\\data\\or05pk04\\figures\\{syllable}_dist.svg')
+fig1.savefig(f'figures\\pk02gr02_dist_5to9_repeats.svg')
 plt.show()
 
 #######################################################################################################################
@@ -96,7 +99,8 @@ for plot_idx, data_idx in zip([0, 1, 2], [0, 2, 4]):
     if plot_idx < 2:
         plt.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
 ax.spines["bottom"].set_visible(True)
-plt.show()
 
+fig1.savefig(f'figures\\or05pk04_repeat_dist.svg')
+plt.show()
 embed()
 quit()
