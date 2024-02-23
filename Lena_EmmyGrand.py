@@ -84,20 +84,24 @@ for playback_idx in range(len(syllable)):
 max_steps = np.max(np.hstack(playback_list))
 steps = np.linspace(0, max_steps + 1, max_steps + 2)
 # ----------------------------------------------------------------------------------------------------------------------
+all_counts = {}
 fig1 = plt.figure(figsize=(21 / 2.54, 12 / 2.54))
 for plot_idx, data_idx in zip([0, 1, 2], [0, 2, 4]):
     ax = fig1.add_subplot(3, 1, 1 + plot_idx)
-    counts, bins = np.histogram(playback_list[data_idx], steps)
-    ax.plot(bins[1:-1], counts[1:] / np.sum(counts[1:]), label=labels[data_idx], linewidth=4, color=colors_2[0])
-    counts, bins = np.histogram(playback_list[data_idx + 1], steps)
-    ax.plot(bins[1:-1], counts[1:] / np.sum(counts[1:]), label=labels[data_idx + 1], linewidth=4, color=colors_2[1])
+    counts1, bins1 = np.histogram(playback_list[data_idx], steps)
+    ax.plot(bins1[1:-1], counts1[1:] / np.sum(counts1[1:]), label=labels[data_idx], linewidth=4, color=colors_2[0])
+    counts2, bins2 = np.histogram(playback_list[data_idx + 1], steps)
+    ax.plot(bins2[1:-1], counts2[1:] / np.sum(counts2[1:]), label=labels[data_idx + 1], linewidth=4, color=colors_2[1])
     plt.legend()
+    all_counts[labels[data_idx]] = counts1
+    all_counts[labels[data_idx+1]] = counts2
     if plot_idx < 2:
         plt.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
 ax.spines["bottom"].set_visible(True)
-
 fig1.savefig(f'figures\\or05pk04_repeat_dist.svg')
 fig1.savefig(f'figures\\or05pk04_repeat_dist.png')
 plt.show()
+
+np.save('figures/or05pk04_repeat_dist.npy', all_counts, allow_pickle=True)
 embed()
 quit()
