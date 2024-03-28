@@ -4,6 +4,15 @@ import scipy.io as sio
 import re
 
 
+def get_data(path, intro_notes, bout_chunk):
+    file_list = glob.glob(path)
+
+    seqs = get_labels(file_list, intro_notes)
+    bouts, _ = get_bouts(seqs, bout_chunk)
+
+    return bouts
+
+
 def get_labels(mat_list, notes):
     """
     Extracts sequence labels from a list of .mat files.
