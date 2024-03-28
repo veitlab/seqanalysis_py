@@ -6,5 +6,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Intan_code" />
     <orderEntry type="module" module-name="data_sorting_Intan" />
+    <orderEntry type="module" module-name="project2_repeats" />
+    <orderEntry type="module" module-name="project1_HVC" />
   </component>
 </module>
