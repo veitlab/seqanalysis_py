@@ -18,9 +18,13 @@ log = config_logging()
 def get_catch_data(cfg):
     # assembles the files in the path
     file_list = []
-    list = glob.glob(cfg["paths"]["catch_path"])
-    for i in range(len(list)):
-        with open(list[i] + cfg["paths"]["catch_file"], "r") as file:
+    files_path = pathlib.Path(cfg["paths"]["catch_path"])
+    if not files_path.exists():
+        log.error(f"Path {files_path} does not exist")
+        FileNotFoundError(f"Path {files_path} does not exist")
+    files = list(files_path.glob("*/*.not.mat"))
+    for i in range(len(files)):
+        with open(files[i] + cfg["paths"]["catch_file"], "r") as file:
             line_list = file.readlines()
             file_list.extend(
                 [list[i] + item.rstrip() + ".not.mat" for item in line_list]
@@ -66,10 +70,13 @@ def get_data(cfg):
     log.info(f"Files found: {len(file_list)}")
 
     seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
+    embed()
+    exit()
     cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
         seqs, cfg["labels"]["bout_chunk"]
     )
     if cfg["labels"]["double_syl"] != [None]:
+        log.info("Replacing double syllables")
         for i in range(len(cfg["labels"]["double_syl"])):
             if i == 0:
                 cfg["data"]["bouts_rep"] = re.sub(
@@ -86,6 +93,7 @@ def get_data(cfg):
     else:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
+    log.info("Replacing chunks")
     cfg["data"]["chunk_bouts"] = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
     )
