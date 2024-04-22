@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "seqanalysis-py"
+name = "seqanalysis"
 version = "0.1.0"
 description = "Scripts for analysing not.mat data to get transiongraphs and the matrix"
-authors = ["Your Name <you@example.com>"]
+authors = ["wendtalexander <wendtalexander@protonmail.com>"]
 readme = "README.md"
+package-mode = true
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -14,6 +15,8 @@ pyyaml = "^6.0.1"
 networkx = "^3.3"
 pandas = "^2.2.2"
 seaborn = "^0.13.2"
+rich = "^13.7.1"
+setuptools = "^69.5.1"
 
 
 [build-system]
