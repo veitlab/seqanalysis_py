@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 import seqanalysis.util.plot_functions as pf
 import seqanalysis.util.helper_functions as hf
+from seqanalysis.util.logging import config_logging
+
+log = config_logging()
 
 
 def get_catch_data(cfg):
@@ -50,6 +53,7 @@ def get_catch_data(cfg):
 
 def get_data(cfg):
     file_list = glob.glob(cfg["paths"]["folder_path"])
+    log.info(f"Files found: {len(file_list)}")
 
     seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
     cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
@@ -70,7 +74,7 @@ def get_data(cfg):
                     cfg["data"]["bouts_rep"],
                 )
     else:
-        cfg['data']['bouts_rep'] = cfg['data']['bouts']
+        cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
     cfg["data"]["chunk_bouts"] = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
@@ -116,7 +120,7 @@ def make_final_plots(cfg):
     print(tmp)
 
     # Filter out nodes with low occurrence
-    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg['constants']['node_threshold'])
+    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg["constants"]["node_threshold"])
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
     print(np.delete(cfg["labels"]["unique_labels"], k))
@@ -143,23 +147,22 @@ def make_final_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
         cfg["title_figures"],
     )
-=======
-    tmpd = hf.get_node_matrix(tmpd, cfg['constants']['edge_threshold'])
+    tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
 
     # Plot Transition Matrix and Transition Diagram
-    node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * cfg['constants']['node_size']
+    node_size = (
+        np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2)
+        * cfg["constants"]["node_size"]
+    )
 
-    pf.plot_transition_matrix(tmpd,
-                              cfg['labels']['node_labels'],
-                              cfg['paths']['save_path'] + cfg['title_figures'] + '_matrix.pdf',
-                              cfg['title_figures'])
-    pf.plot_transition_diagram(tmpd,
-                               cfg['labels']['node_labels'],
-                               node_size,
-                               cfg['constants']['edge_width'],
-                               cfg['paths']['save_path'] + cfg['title_figures'] + '_graph.pdf',
-                               cfg['title_figures'])
->>>>>>> main
+    pf.plot_transition_diagram(
+        tmpd,
+        cfg["labels"]["node_labels"],
+        node_size,
+        cfg["constants"]["edge_width"],
+        cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
+        cfg["title_figures"],
+    )
     plt.show()
 
 
@@ -169,6 +172,7 @@ def main(yaml_file, analyse_files):
         f.close()
 
     if not cfg["data"]["bouts"]:
+        log.info("No bouts found in yaml file")
         if analyse_files == "all":
             cfg = get_data(cfg)
         elif analyse_files == "catch":
@@ -189,8 +193,6 @@ def main(yaml_file, analyse_files):
         yaml.dump(cfg, f)
         # print(yaml.dump(cfg))
         f.close()
-    # embed()
-    # quit()
 
 
 if __name__ == "__main__":

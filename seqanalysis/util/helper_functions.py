@@ -3,6 +3,9 @@ import numpy as np
 import scipy.io as sio
 import re
 from IPython import embed
+from seqanalysis.util.logging import config_logging
+
+log = config_logging()
 
 
 def get_data(path, intro_notes, bout_chunk):
@@ -28,6 +31,7 @@ def get_labels(mat_list, notes):
     seqs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
+        log.debug(f"Processing file: {matidx}")
 
         labels = mat["labels"][0]
         labels = "S" + labels + "E"
@@ -36,7 +40,7 @@ def get_labels(mat_list, notes):
             try:
                 labels = replace_intro_notes(labels, notes)
             except ValueError:
-                print("Intro notes not found in file: " + matidx)
+                log.error(f"Intro notes not found in file: {matidx} ")
 
         seqs.append(labels)
     seqs = np.array(seqs)
@@ -85,8 +89,6 @@ def replace_chunks(s, chunks):
     - s (str): Sequence with replaced chunks.
     """
     for i in range(len(chunks)):
-        embed()
-        exit()
         s = re.sub(chunks[i], chunks[i][0].upper(), s)
 
     return s

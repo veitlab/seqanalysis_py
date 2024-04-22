@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 
 from IPython import embed
 
-plt.rcParams['svg.fonttype'] = 'none'  # this is so that svg figures save text as text and not the single letters
+plt.rcParams["svg.fonttype"] = (
+    "none"  # this is so that svg figures save text as text and not the single letters
+)
 
 
 def plot_transition_matrix(matrix, labels, save_path, title):
@@ -19,8 +21,17 @@ def plot_transition_matrix(matrix, labels, save_path, title):
     - title (str): Title of the plot.
     """
     fig, ax = plt.subplots()
-    hm = sns.heatmap(matrix, ax = ax, annot=True, vmin=0, vmax=100, fmt="d", cmap='Greys',
-               xticklabels=labels, yticklabels=labels)
+    hm = sns.heatmap(
+        matrix,
+        ax=ax,
+        annot=True,
+        vmin=0,
+        vmax=100,
+        fmt="d",
+        cmap="Greys",
+        xticklabels=labels,
+        yticklabels=labels,
+    )
     ax.set_yticklabels(hm.get_yticklabels(), rotation=0)
     ax.tick_params(left=False, bottom=False)
     sns.despine(top=False, right=False, left=False, bottom=False)
@@ -48,7 +59,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     node_labels = dict(zip(Graph, labels))
 
     # Get edge labels from the graph
-    edge_labels = nx.get_edge_attributes(Graph, 'weight')
+    edge_labels = nx.get_edge_attributes(Graph, "weight")
 
     # Set the positions of nodes in a circular layout
     positions = nx.circular_layout(Graph)
@@ -58,20 +69,37 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
 
     # Draw nodes with specified size, color, and transparency
-    nx.draw_networkx_nodes(Graph, pos=positions, node_size=node_size, node_color="tab:orange", ax=ax, alpha=0.9)
+    nx.draw_networkx_nodes(
+        Graph,
+        pos=positions,
+        node_size=node_size,
+        node_color="tab:orange",
+        ax=ax,
+        alpha=0.9,
+    )
 
     # Draw node labels
     nx.draw_networkx_labels(Graph, pos=positions, labels=node_labels)
 
     # Draw edges with specified width, arrows, and style
     edge_width = [x / edge_width for x in [*edge_labels.values()]]
-    nx.draw_networkx_edges(Graph, pos=positions, node_size=node_size, width=edge_width,
-                           arrows=True, arrowsize=20,
-                           min_target_margin=25, min_source_margin=10, connectionstyle="arc3,rad=0.2",
-                           ax=ax)
+    nx.draw_networkx_edges(
+        Graph,
+        pos=positions,
+        node_size=node_size,
+        width=edge_width,
+        arrows=True,
+        arrowsize=20,
+        min_target_margin=25,
+        min_source_margin=10,
+        connectionstyle="arc3,rad=0.2",
+        ax=ax,
+    )
 
     # Draw edge labels at the midpoint of the edges
-    nx.draw_networkx_edge_labels(Graph, positions, label_pos=0.5, edge_labels=edge_labels, ax=ax, rotate=False)
+    nx.draw_networkx_edge_labels(
+        Graph, positions, label_pos=0.5, edge_labels=edge_labels, ax=ax, rotate=False
+    )
 
     # Remove spines for a cleaner appearance
     ax.spines["top"].set_visible(False)
