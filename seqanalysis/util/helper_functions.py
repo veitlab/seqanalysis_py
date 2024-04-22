@@ -157,6 +157,7 @@ def get_bouts(seqs, bout_string):
         if seqs[seqsidx].find(bout_string) >= 0:
             bouts = bouts + seqs[seqsidx]
         elif seqs[seqsidx].find(bout_string) < 0:
+            log.debug(f"Sequence {seqsidx} is not a bout")
             noise = noise + seqs[seqsidx]
 
     return bouts, noise
@@ -174,6 +175,7 @@ def get_transition_matrix(bout, unique_labels):
     - transM (numpy array): Transition matrix.
     - transM_prob (numpy array): Transition probability matrix.
     """
+
     transM = np.zeros((len(unique_labels), len(unique_labels)))
     transM_prob = np.zeros((len(unique_labels), len(unique_labels)))
 
@@ -182,9 +184,9 @@ def get_transition_matrix(bout, unique_labels):
 
     for idx in range(len(numbers) - 1):
         transM[numbers[idx], numbers[idx + 1]] += 1
-        transM_prob[numbers[idx], numbers[idx + 1]] += 1
 
-    transM_prob = (transM_prob.T / np.sum(transM, axis=1)).T
+    # Normalize transition matrix
+    transM_prob = (transM.T / np.sum(transM, axis=0)).T
     transM = transM.astype(int)
 
     return transM, transM_prob
