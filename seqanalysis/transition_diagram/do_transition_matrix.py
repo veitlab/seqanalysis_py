@@ -70,12 +70,10 @@ def get_data(cfg):
     log.info(f"Files found: {len(file_list)}")
 
     seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
-    embed()
-    exit()
     cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
         seqs, cfg["labels"]["bout_chunk"]
     )
-    if cfg["labels"]["double_syl"] != [None]:
+    if cfg["labels"]["double_syl"]:
         log.info("Replacing double syllables")
         for i in range(len(cfg["labels"]["double_syl"])):
             if i == 0:
@@ -103,20 +101,24 @@ def get_data(cfg):
 
 def make_first_plots(cfg):
     bouts = cfg["data"]["bouts_rep"]
-    tm, _ = hf.get_transition_matrix(bouts, cfg["labels"]["unique_labels"])
+    # unique_labels in bouts
+    unique_labels = sorted(list(set(bouts)))
+    log.info(f"Unique labels of Chunks from bouts_rep: {unique_labels}\n")
+    tm, _ = hf.get_transition_matrix(bouts, unique_labels)
 
-    # ---------------------------------------------------------------------------------------------------------------
-    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= 0)
+    k = np.where(
+        np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
+    )
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
 
-    tmpd = (tmd.T / np.sum(tmd, axis=1)).T
+    tmpd = (tmd.T / np.sum(tmd, axis=0)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
-    "Plot Transition Matrix and Transition Diagram"
+    # "Plot Transition Matrix and Transition Diagram"
     node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
     pf.plot_transition_diagram(
         tmpd,
-        np.delete(cfg["labels"]["unique_labels"], k),
+        np.delete(unique_labels, k),
         node_size,
         cfg["constants"]["edge_width"],
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph_simple.pdf",
@@ -125,7 +127,7 @@ def make_first_plots(cfg):
 
     pf.plot_transition_matrix(
         tmpd,
-        np.delete(cfg["labels"]["unique_labels"], k),
+        np.delete(unique_labels, k),
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
         cfg["title_figures"],
     )
@@ -165,22 +167,6 @@ def make_final_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
         cfg["title_figures"],
     )
-    tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
-
-    # Plot Transition Matrix and Transition Diagram
-    node_size = (
-        np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2)
-        * cfg["constants"]["node_size"]
-    )
-
-    pf.plot_transition_diagram(
-        tmpd,
-        cfg["labels"]["node_labels"],
-        node_size,
-        cfg["constants"]["edge_width"],
-        cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
-        cfg["title_figures"],
-    )
     plt.show()
 
 
@@ -197,13 +183,14 @@ def main(yaml_file, analyse_files):
             cfg = get_catch_data(cfg)
 
         make_first_plots(cfg)
-        print(
-            "\n Unique labels of Chunks: {}\n".format(
-                sorted(list(set(cfg["data"]["chunk_bouts"])))
-            )
+        log.info(
+            f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
         )
 
     else:
+        log.info(
+            f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
+        )
         # print('{} Unique labels of Chunks: '.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
         make_final_plots(cfg)
 
