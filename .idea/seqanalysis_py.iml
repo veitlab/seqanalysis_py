@@ -5,5 +5,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Intan_code" />
+    <orderEntry type="module" module-name="data_sorting_Intan" />
+    <orderEntry type="module" module-name="project2_repeats" />
+    <orderEntry type="module" module-name="project1_HVC" />
+    <orderEntry type="module" module-name="ava_codes" />
   </component>
 </module>

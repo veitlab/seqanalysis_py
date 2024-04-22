@@ -3,8 +3,8 @@ import sys
 import glob
 import yaml
 import numpy as np
-import plot_functions as pf
-import helper_functions as hf
+import jacquiutil.plot_functions as pf
+import jacquiutil.helper_functions as hf
 import matplotlib.pyplot as plt
 from IPython import embed
 
@@ -18,14 +18,27 @@ def get_data(path, intro_notes, bout_chunk):
     return bouts
 
 
+def get_catch_data(path, intro_notes, bout_chunk):
+    # assembles the files in the path
+    file_list = []
+    list = glob.glob(path)
+
+    for i in range(len(list)):
+        with open(list[i] + 'batch.catch', 'r') as file:
+            line_list = file.readlines()
+            file_list.extend([list[i] + item.rstrip() + '.not.mat' for item in line_list])
+    seqs = hf.get_labels(file_list, intro_notes)
+    bouts, _ = hf.get_bouts(seqs, bout_chunk)
+
+    return bouts
+
+
 def main(folder_path, folder, syl, labels, bout_chunk):
     folder_lengths = []
     for folder_idx in range(len(folder)):
-        bouts = get_data(
-            folder_path + "/*cbin.not.mat",
-            ["E", "S"],
-            bout_chunk,
-        )
+        bouts = get_data(folder_path+folder[folder_idx]+'*cbin.not.mat', ['E', 'S'], bout_chunk)
+
+        # bouts = get_catch_data(folder_path+folder[folder_idx], ['E', 'S', 'k', 'f'], bout_chunk)
         all_b = re.findall(syl, bouts)
         lengths = [len(item) - 2 for item in all_b]
         folder_lengths.append(lengths)
@@ -53,11 +66,21 @@ def main(folder_path, folder, syl, labels, bout_chunk):
     ax1.spines["right"].set_visible(False)
     ax1.tick_params(width=2)
     ax1.tick_params(axis="both", which="major", labelsize=20)
-    plt.legend()
-    plt.show()
+=======
+        ax1.plot(bins[1:-1], counts[1:]/np.sum(counts[1:]), label=labels[plot_idx], linewidth=4)
 
-    embed()
-    quit()
+    ax1.set_xlabel('Repeat number', fontsize=20)
+    ax1.set_ylabel('Rel. frequency', fontsize=20)
+
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    ax1.tick_params(width=2)
+    ax1.tick_params(axis='both', which='major', labelsize=18)
+>>>>>>> main
+    plt.legend()
+    fig1.savefig(f'..\\..\\..\\data\\or05pk04\\figures\\{syllable}_dist.svg')
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -77,5 +100,20 @@ if __name__ == "__main__":
     bout_chunk = "bchg"
 
     folders = ["C:/Users/awendt/Documents/Masterthesis/transition_matrix/ye01pu08/"]
+    plt.rcParams['svg.fonttype'] = 'none'  # this is so that svg figures save text as text and not the single letters
+    plt.rcParams['font.size'] = 20
+    plt.rcParams['axes.linewidth'] = 2
+
+    syllable = 'fb+'
+    # syllable = 'db+'
+    # syllable = 'db+(?![w])'
+    path = 'D:/Birds/or05pk04/*/*/'
+    # labels = [f'{syllable}']
+    bout_chunk = 'b'
+
+    # folders = ['22110*/', '22111[^45]/', '221115/', '221116/', '221117/', '221118/', '221121/', '230807/']
+    folders = ['22110*/', '22111[4-5]/', '22111[6-8]/', '221121/', '230807/']
+    labels = ['BL', 'T1/2', 'T3-5', 'post', '11M PE']
+>>>>>>> main
 
     main(path, folders, syllable, labels, bout_chunk)

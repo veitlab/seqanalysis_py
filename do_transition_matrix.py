@@ -3,11 +3,10 @@ import sys
 import glob
 import yaml
 import numpy as np
-import plot_functions as pf
-import helper_functions as hf
 import matplotlib.pyplot as plt
 
-from IPython import embed
+import jacquiutil.plot_functions as pf
+import jacquiutil.helper_functions as hf
 
 
 def get_catch_data(cfg):
@@ -71,7 +70,7 @@ def get_data(cfg):
                     cfg["data"]["bouts_rep"],
                 )
     else:
-        cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
+        cfg['data']['bouts_rep'] = cfg['data']['bouts']
 
     cfg["data"]["chunk_bouts"] = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
@@ -116,12 +115,13 @@ def make_final_plots(cfg):
     tm, tmp = hf.get_transition_matrix(bouts, cfg["labels"]["unique_labels"])
     print(tmp)
 
-    # ---------------------------------------------------------------------------------------------------------------
-    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg["constants"]["node_threshold"])
+    # Filter out nodes with low occurrence
+    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg['constants']['node_threshold'])
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
     print(np.delete(cfg["labels"]["unique_labels"], k))
 
+    # Normalize transition matrix and create node matrix
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
     node_size = (
@@ -143,6 +143,23 @@ def make_final_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
         cfg["title_figures"],
     )
+=======
+    tmpd = hf.get_node_matrix(tmpd, cfg['constants']['edge_threshold'])
+
+    # Plot Transition Matrix and Transition Diagram
+    node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * cfg['constants']['node_size']
+
+    pf.plot_transition_matrix(tmpd,
+                              cfg['labels']['node_labels'],
+                              cfg['paths']['save_path'] + cfg['title_figures'] + '_matrix.pdf',
+                              cfg['title_figures'])
+    pf.plot_transition_diagram(tmpd,
+                               cfg['labels']['node_labels'],
+                               node_size,
+                               cfg['constants']['edge_width'],
+                               cfg['paths']['save_path'] + cfg['title_figures'] + '_graph.pdf',
+                               cfg['title_figures'])
+>>>>>>> main
     plt.show()
 
 
