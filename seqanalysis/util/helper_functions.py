@@ -1,8 +1,11 @@
 import glob
+import re
+import string
+
 import numpy as np
 import scipy.io as sio
-import re
 from IPython import embed
+
 from seqanalysis.util.logging import config_logging
 
 log = config_logging()
@@ -39,6 +42,7 @@ def get_labels(mat_list, notes):
         if len(notes) > 0:
             try:
                 labels = replace_intro_notes(labels, notes)
+                log.debug(f"Intro notes replaced in file: {matidx}")
             except ValueError:
                 log.error(f"Intro notes not found in file: {matidx} ")
 
@@ -88,6 +92,7 @@ def replace_chunks(s, chunks):
     Returns:
     - s (str): Sequence with replaced chunks.
     """
+    asci_letters = list(string.ascii_letters)
     for i in range(len(chunks)):
         s = re.sub(chunks[i], chunks[i][0].upper(), s)
 
