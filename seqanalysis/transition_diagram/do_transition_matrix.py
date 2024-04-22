@@ -5,8 +5,8 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 
-import jacquiutil.plot_functions as pf
-import jacquiutil.helper_functions as hf
+import seqanalysis.util.plot_functions as pf
+import seqanalysis.util.helper_functions as hf
 
 
 def get_catch_data(cfg):

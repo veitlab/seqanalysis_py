@@ -6,14 +6,15 @@ import string
 import numpy as np
 import scipy.io as sio
 import scipy.stats as stats
-import jacquiutil.plot_functions as pf
-import jacquiutil.helper_functions as hf
+import seqanalysis.util.plot_functions as pf
+import seqanalysis.util.helper_functions as hf
 import matplotlib.pyplot as plt
 
 from IPython import embed
 
+
 def chi2_dist(dist1, dist2, alpha):
-    '''
+    """
 
     :param dist1: observed distribution
     :param dist2: expected distribution
@@ -21,7 +22,7 @@ def chi2_dist(dist1, dist2, alpha):
 
     :return:
 
-    '''
+    """
 
     df = len(dist1) - 1  # freiheitsgrade
     obs_dist = np.array([dist1, dist2])
@@ -36,7 +37,7 @@ def chi2_dist(dist1, dist2, alpha):
             exp_dist[idx_row, idx_col] = sum_row[idx_row] * sum_col[idx_col] / sum_total
 
     diff = obs_dist - exp_dist
-    norm_diff = (diff ** 2) / exp_dist
+    norm_diff = (diff**2) / exp_dist
     chi2 = np.sum(norm_diff)
     p = 1 - stats.chi2.cdf(chi2, df)
 
@@ -49,20 +50,19 @@ def chi2_dist(dist1, dist2, alpha):
 
 
 def make_states_of_syl_chi2(seqs):
-
     # unique syl
     unq = sorted(list(set(seqs)))
 
     # prob of all syls to all possible following syl
     tm_sf, tmp_sf = hf.get_transition_matrix(seqs, unq)
-    sylM_sf = np.array([['11'] * len(unq)] * len(unq))
+    sylM_sf = np.array([["11"] * len(unq)] * len(unq))
     for idx1 in range(len(unq)):
         for idx2 in range(len(unq)):
             sylM_sf[idx1, idx2] = unq[idx1] + unq[idx2]
 
     # prob of all syls to all possible following syl and depending on before syl
     tm_bsf, tmp_bsf = hf.get_transition_matrix_befor_following_syl(seqs, unq)
-    sylM_bsf = np.array([[['111'] * len(unq)] * len(unq)] * len(unq))
+    sylM_bsf = np.array([[["111"] * len(unq)] * len(unq)] * len(unq))
     for idx1 in range(len(unq)):
         for idx2 in range(len(unq)):
             for idx3 in range(len(unq)):
@@ -79,9 +79,8 @@ def make_states_of_syl_chi2(seqs):
     tm_sf2[~np.array(nonzeros_log)] = 0
 
     # remove Y transitions because Y doesn't depend on anything
-    rowY = [m.start(0) for m in re.finditer('Y', ''.join(unq))][0]
-    tm_sf2[rowY,:] = 0
-
+    rowY = [m.start(0) for m in re.finditer("Y", "".join(unq))][0]
+    tm_sf2[rowY, :] = 0
 
     # save tm_bsf
     test_tm_bsf = tm_bsf
@@ -102,7 +101,7 @@ def make_states_of_syl_chi2(seqs):
                 test_tm_bsf[idx1, idx2] = 0
 
     #
-    test_sylM_bsf = np.array([[['   '] * len(unq)] * len(unq)] * len(unq))
+    test_sylM_bsf = np.array([[["   "] * len(unq)] * len(unq)] * len(unq))
     for idx1 in range(len(unq)):
         existingpostsyls = np.argwhere(tm_sf2[idx1] / np.sum(tm_sf2[idx1]) > 0.01)
         if len(np.argwhere(tm_sf2[idx1] > 0.01)) > 0:
@@ -110,20 +109,26 @@ def make_states_of_syl_chi2(seqs):
                 numstates = len(np.unique(np.nonzero(test_tm_bsf[:, idx1])[0]))
                 if np.sum(test_tm_bsf[idx2, idx1]) > 0:
                     if np.count_nonzero(test_tm_bsf[idx2, idx1][existingpostsyls]) > 1:
-                        test_sylM_bsf[idx2, idx1][existingpostsyls] = sylM_bsf[idx2, idx1][existingpostsyls]
-                        h_chi2, chi_chi2, p_chi2, _, _ = chi2_dist(np.hstack(tm_sf2[idx1][existingpostsyls]),
-                                                                   np.hstack(test_tm_bsf[idx2, idx1][existingpostsyls]),
-                                                                   0.01 / numstates)
+                        test_sylM_bsf[idx2, idx1][existingpostsyls] = sylM_bsf[
+                            idx2, idx1
+                        ][existingpostsyls]
+                        h_chi2, chi_chi2, p_chi2, _, _ = chi2_dist(
+                            np.hstack(tm_sf2[idx1][existingpostsyls]),
+                            np.hstack(test_tm_bsf[idx2, idx1][existingpostsyls]),
+                            0.01 / numstates,
+                        )
                         h[idx2, idx1] = h_chi2
                         chi[idx2, idx1] = chi_chi2
                         p[idx2, idx1] = p_chi2
 
-                    elif np.count_nonzero(test_tm_bsf[idx2, idx1][existingpostsyls]) == 1:
+                    elif (
+                        np.count_nonzero(test_tm_bsf[idx2, idx1][existingpostsyls]) == 1
+                    ):
                         h[idx2, idx1] = 1
 
     # keep only the transitions that are h = 1
     test_sylM_sf = sylM_sf
-    test_sylM_sf[h != 1] = '  '
+    test_sylM_sf[h != 1] = "  "
 
     # now relabeling of original sequence -----------------------------------------------------------------------------
     # find letters not present in seqs
@@ -131,25 +136,29 @@ def make_states_of_syl_chi2(seqs):
     all_letters = string.ascii_letters + string.digits
     available_letters = all_letters[::-1]
     for unq_idx in unq:
-        available_letters = re.sub(unq_idx, '', available_letters)
+        available_letters = re.sub(unq_idx, "", available_letters)
 
     # collecting indices for repleacing and replacing together
     states_log = h == 1
     states_sum = sum(states_log)
     to_relabel = np.delete(test_sylM_sf, np.where(states_sum == 0), axis=1)
 
-    relabel_table = np.full((int(sum(states_sum)), 3), '  ')
+    relabel_table = np.full((int(sum(states_sum)), 3), "  ")
     relabel_pos = []
 
     av_letter_counter = 0
     for states_sum_idx in range(sum(states_sum != 0)):
-        to_relabel_row = np.where(to_relabel[:, states_sum_idx] != '  ')[0]
+        to_relabel_row = np.where(to_relabel[:, states_sum_idx] != "  ")[0]
         row_counter = 0
         for to_relabel_row_idx in to_relabel_row:
             state_seq = to_relabel[to_relabel_row_idx, states_sum_idx]
-            relabel_pos.append([match.end(0) - 1 for match in re.finditer(state_seq, seqs)])
+            relabel_pos.append(
+                [match.end(0) - 1 for match in re.finditer(state_seq, seqs)]
+            )
 
-            relabel_table[av_letter_counter, 0] = np.array(available_letters[av_letter_counter], dtype='S1')
+            relabel_table[av_letter_counter, 0] = np.array(
+                available_letters[av_letter_counter], dtype="S1"
+            )
             relabel_table[av_letter_counter, 1] = state_seq[1] + str(row_counter)
             relabel_table[av_letter_counter, 2] = state_seq
 
@@ -159,13 +168,16 @@ def make_states_of_syl_chi2(seqs):
     # collecting indices for replacing and replacing together
     relabel_tm_bsf = np.delete(test_tm_bsf, np.where(states_sum == 0), axis=1)
 
-    which_to_merge = np.full(relabel_tm_bsf[:,:,0].shape, np.nan).tolist()
-    names_to_merge = np.full(relabel_tm_bsf[:,:,0].shape, np.nan).tolist()
+    which_to_merge = np.full(relabel_tm_bsf[:, :, 0].shape, np.nan).tolist()
+    names_to_merge = np.full(relabel_tm_bsf[:, :, 0].shape, np.nan).tolist()
 
     for ip in range(np.shape(which_to_merge)[1]):
-
         # this is to keep track of the actual position in the matrix
-        f_row, f_column = np.where(relabel_tm_bsf[:, ip, :] / np.sum(relabel_tm_bsf[:, ip, :], axis=1, keepdims=True) > 0.05)
+        f_row, f_column = np.where(
+            relabel_tm_bsf[:, ip, :]
+            / np.sum(relabel_tm_bsf[:, ip, :], axis=1, keepdims=True)
+            > 0.05
+        )
 
         # to get which branches have the same transitions and compare them, if the state of the syllable is the same
         # or different depending on the previous syllable
@@ -173,7 +185,7 @@ def make_states_of_syl_chi2(seqs):
         # percent_of_iter = relabel_tm_bsf[value_idx, ip, :]/np.sum(relabel_tm_bsf[value_idx, ip, :], axis=1, keepdims=True)
 
         mapping = {}
-        for key, value in zip (f_row, f_column):
+        for key, value in zip(f_row, f_column):
             if key in mapping:
                 mapping[key].append(value)
             else:
@@ -195,8 +207,6 @@ def make_states_of_syl_chi2(seqs):
                     index.append(k)
 
             # if len(out[ir]) > 1: #then do all the testing
-
-
 
         # ToDo: this for loop will not work because i'm working from the inside out of the loops in the matlab
         #  function (line 178-216)
@@ -230,7 +240,6 @@ def make_states_of_syl_chi2(seqs):
     #     names_to_merge.append([torelabel[row,col] for row, col in which_to_merge])
 
 
-
 # def make_first_plots(cfg):
 #     bouts = cfg['data']['bouts_rep']
 #     tm, _ = hf.get_transition_matrix(bouts, cfg['labels']['unique_labels'])
@@ -256,12 +265,11 @@ def main(yaml_file):
         cfg = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
 
-    sequence = cfg['data']['bouts']
+    sequence = cfg["data"]["bouts"]
     chunk_seqs = make_states_of_syl_chi2(sequence)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     #     This function tried to automate extraction of chunks based on chi sq
     # analysis. First, we try to determine if a syllable's next transition
     # depends on the syllable that comes before it using chi sq analysis. If it
