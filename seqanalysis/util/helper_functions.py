@@ -64,13 +64,13 @@ def replace_intro_notes(s, intro_notes):
     - s (str): Sequence with replaced introductory notes.
     """
     unique_labels = sorted(list(set(s)))
-    for i in range(len(intro_notes)):
-        if intro_notes[i] in s:
-            unique_labels.remove(intro_notes[i])
+    for i, intro_note in enumerate(intro_notes):
+        if intro_note in s:
+            unique_labels.remove(intro_note)
 
     motiv_start = []
-    for i in range(len(unique_labels)):
-        motiv_start.append(s.find(unique_labels[i]))
+    for unique_label in unique_labels:
+        motiv_start.append(s.find(unique_label))
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
@@ -92,12 +92,10 @@ def replace_chunks(s, chunks):
     Returns:
     - s (str): Sequence with replaced chunks.
     """
-    embed()
-    exit()
     asci_letters = list(string.ascii_uppercase)
-    for i in range(len(chunks)):
-        s = re.sub(chunks[i], chunks[i][0].upper(), s)
-
+    for i, chunk in enumerate(chunks):
+        log.info(f"Replacing chunk: {chunks[i]}, with {asci_letters[i]}")
+        s = re.sub(chunk, asci_letters[i], s)
     return s
 
 
