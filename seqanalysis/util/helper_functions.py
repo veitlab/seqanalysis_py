@@ -37,7 +37,7 @@ def get_labels(mat_list, notes):
         log.debug(f"Processing file: {matidx}")
 
         labels = mat["labels"][0]
-        labels = "S" + labels + "E"
+        labels = "_" + labels
 
         if len(notes) > 0:
             try:
@@ -92,7 +92,9 @@ def replace_chunks(s, chunks):
     Returns:
     - s (str): Sequence with replaced chunks.
     """
-    asci_letters = list(string.ascii_letters)
+    embed()
+    exit()
+    asci_letters = list(string.ascii_uppercase)
     for i in range(len(chunks)):
         s = re.sub(chunks[i], chunks[i][0].upper(), s)
 

@@ -1,12 +1,15 @@
+import glob
+import pathlib
 import re
 import sys
-import glob
-import yaml
-import numpy as np
-import matplotlib.pyplot as plt
 
-import seqanalysis.util.plot_functions as pf
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
+from IPython import embed
+
 import seqanalysis.util.helper_functions as hf
+import seqanalysis.util.plot_functions as pf
 from seqanalysis.util.logging import config_logging
 
 log = config_logging()
@@ -52,7 +55,14 @@ def get_catch_data(cfg):
 
 
 def get_data(cfg):
-    file_list = glob.glob(cfg["paths"]["folder_path"])
+    file_list = pathlib.Path((cfg["paths"]["folder_path"]))
+    if not file_list.exists():
+        log.error(f"Path {file_list} does not exist")
+        FileNotFoundError(f"Path {file_list} does not exist")
+    file_list = list(file_list.glob("*/*.not.mat"))
+    if not file_list:
+        log.error(f"No files found in {file_list}")
+        FileNotFoundError(f"No files found in {file_list}")
     log.info(f"Files found: {len(file_list)}")
 
     seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])

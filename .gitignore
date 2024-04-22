@@ -1,3 +1,6 @@
 /figures
 __pycache__/
 env
+transition_diagram_output/*
+*.yaml
+!template.yaml
