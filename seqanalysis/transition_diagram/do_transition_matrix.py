@@ -116,6 +116,9 @@ def make_first_plots(cfg):
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
     # "Plot Transition Matrix and Transition Diagram"
     node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
+    # get them into the right order
+    arg = np.argmax(tmpd, axis=1)
+    temp = tmpd[:, arg]
     pf.plot_transition_diagram(
         tmpd,
         np.delete(unique_labels, k),
@@ -186,6 +189,7 @@ def main(yaml_file, analyse_files):
         log.info(
             f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
         )
+        make_final_plots(cfg)
 
     else:
         log.info(
