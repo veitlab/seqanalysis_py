@@ -106,6 +106,34 @@ def make_first_plots(cfg):
     log.info(f"Unique labels of Chunks from bouts_rep: {unique_labels}\n")
     tm, _ = hf.get_transition_matrix(bouts, unique_labels)
 
+    # U2 is the size of the strings in zeros
+    label_matrix = np.zeros((len(unique_labels), len(unique_labels)), "U2")
+    for i, labely in enumerate(unique_labels):
+        for j, labelx in enumerate(unique_labels):
+            labelylabelx = str(labely + labelx)
+            label_matrix[i, j] = labelylabelx
+
+    # NOTE: Sort tm by the transitions with the highest probability
+    tm_prob = np.around((tm.T / np.sum(tm, axis=0)).T, 2) * 100
+    tm_sorted = np.zeros(tm.shape)
+    label_matrix_sorted = np.zeros((len(unique_labels), len(unique_labels)), "U2")
+    _multiple_index = [0]
+    # NOTE: Add the first element befor entering the loop
+    tm_sorted[0] = tm[0]
+    label_matrix_sorted[0] = label_matrix[0]
+    for i in range(1, tm.shape[0]):
+        for sort in np.argsort(tm_sorted[i - 1])[::-1]:
+            log.info(sort)
+            if sort not in _multiple_index:
+                log.info(_multiple_index)
+                tm_sorted[i] = tm[sort]
+                label_matrix_sorted[i] = label_matrix[sort]
+                _multiple_index.append(sort)
+                log.info(_multiple_index)
+                break
+            else:
+                continue
+
     k = np.where(
         np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
     )
@@ -117,8 +145,7 @@ def make_first_plots(cfg):
     # "Plot Transition Matrix and Transition Diagram"
     node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
     # get them into the right order
-    arg = np.argmax(tmpd, axis=1)
-    temp = tmpd[:, arg]
+
     pf.plot_transition_diagram(
         tmpd,
         np.delete(unique_labels, k),

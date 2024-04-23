@@ -175,6 +175,8 @@ def get_transition_matrix(bout, unique_labels):
     - transM (numpy array): Transition matrix.
     - transM_prob (numpy array): Transition probability matrix.
     """
+    # BUG: unique_labels is not used
+    # unique_labels = unique_labels[:5]
 
     transM = np.zeros((len(unique_labels), len(unique_labels)))
     transM_prob = np.zeros((len(unique_labels), len(unique_labels)))
