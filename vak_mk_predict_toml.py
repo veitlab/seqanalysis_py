@@ -1,9 +1,9 @@
 """ This skript makes predict toml files for an entire folder with dates in it
 
 INPUT:
-    * sys.argv[1] = toml file of the bird, example: example_toml.yaml
+    * sys.argv[1] = path + toml file of the bird, example: example_toml.toml
     * sys.argv[2] = path to file folder
-    * sys.argv[3] = birdname
+    * sys.argv[3] = birdname_condition
 
 OUTPUT:
     * predict_toml files for every day in the folder
@@ -11,8 +11,9 @@ OUTPUT:
 
 import os
 import sys
+
 import toml
-from IPython import embed
+
 
 def main(toml_file, folder_path, birdname):
 
