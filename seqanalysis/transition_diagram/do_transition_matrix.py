@@ -134,21 +134,35 @@ def make_first_plots(cfg):
             else:
                 continue
 
-    k = np.where(
-        np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
-    )
-    tmd = np.delete(tm, k, axis=1)
-    tmd = np.delete(tmd, k, axis=0)
+    # Sort the columns of the matrix
+    _multiple_index_col = np.roll(_multiple_index, -1)
+    tm_sorted = tm_sorted[:, _multiple_index_col]
+    label_matrix_sorted = label_matrix_sorted[:, _multiple_index_col]
 
-    tmpd = (tmd.T / np.sum(tmd, axis=0)).T
+    tmd = tm_sorted.astype(int)
+    # k = np.where(
+    #     np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
+    # )
+    # tmd = np.delete(tm, k, axis=1)
+    # tmd = np.delete(tmd, k, axis=0)
+    # label_matrix_sorted = np.delete(label_matrix_sorted, k, axis=0)
+    # label_matrix_sorted = np.delete(label_matrix_sorted, k, axis=1)
+
+    tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
     # "Plot Transition Matrix and Transition Diagram"
-    node_size = np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2) * 100
+    node_size = np.round(np.sum(tmd, axis=1) / np.max(np.sum(tmd, axis=1)), 2) * 100
     # get them into the right order
+    # nice labels
+    xlabels = []
+    ylabels = []
+    for x, y in zip(label_matrix_sorted[0, :], label_matrix_sorted[:, 0]):
+        xlabels.append(x[1])
+        ylabels.append(y[0])
 
     pf.plot_transition_diagram(
         tmpd,
-        np.delete(unique_labels, k),
+        label_matrix_sorted[:, 0],
         node_size,
         cfg["constants"]["edge_width"],
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph_simple.pdf",
@@ -157,7 +171,8 @@ def make_first_plots(cfg):
 
     pf.plot_transition_matrix(
         tmpd,
-        np.delete(unique_labels, k),
+        xlabels,
+        ylabels,
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
         cfg["title_figures"],
     )
