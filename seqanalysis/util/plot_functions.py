@@ -10,7 +10,7 @@ plt.rcParams["svg.fonttype"] = (
 )
 
 
-def plot_transition_matrix(matrix, labels, save_path, title):
+def plot_transition_matrix(matrix, labelx, labely, save_path, title):
     """
     Plot a heatmap of a transition matrix.
 
@@ -29,8 +29,8 @@ def plot_transition_matrix(matrix, labels, save_path, title):
         vmax=100,
         fmt="d",
         cmap="Greys",
-        xticklabels=labels,
-        yticklabels=labels,
+        xticklabels=labelx,
+        yticklabels=labely,
     )
     ax.set_yticklabels(hm.get_yticklabels(), rotation=0)
     ax.tick_params(left=False, bottom=False)
@@ -51,6 +51,8 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     - save_path (str): File path to save the generated plot.
     - title (str): Title of the plot.
     """
+    embed()
+    exit()
 
     # Create a directed graph from the given matrix
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
