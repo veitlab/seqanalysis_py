@@ -1,6 +1,6 @@
 /figures
 __pycache__/
 env
-seqanalysis/transition_diagram_output/
+*.pdf
 *.yaml
 !template.yaml
