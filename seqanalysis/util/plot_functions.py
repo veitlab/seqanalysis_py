@@ -51,8 +51,6 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     - save_path (str): File path to save the generated plot.
     - title (str): Title of the plot.
     """
-    embed()
-    exit()
 
     # Create a directed graph from the given matrix
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)

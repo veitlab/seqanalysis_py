@@ -135,11 +135,15 @@ def make_first_plots(cfg):
                 continue
 
     # Sort the columns of the matrix
-    _multiple_index_col = np.roll(_multiple_index, -1)
-    tm_sorted = tm_sorted[:, _multiple_index_col]
-    label_matrix_sorted = label_matrix_sorted[:, _multiple_index_col]
+    multiple_index_col_shift = np.roll(_multiple_index, -1)
 
-    tmd = tm_sorted.astype(int)
+    tm_sorted_shift = tm_sorted[:, multiple_index_col_shift]
+    label_matrix_shift = label_matrix_sorted[:, multiple_index_col_shift]
+    tm_sorted_no_shift = tm_sorted[:, _multiple_index]
+    label_matrix_no_shift = label_matrix_sorted[:, _multiple_index]
+
+    tmd = tm_sorted_shift.astype(int)
+    tmd_no_shift = tm_sorted_no_shift.astype(int)
     # k = np.where(
     #     np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
     # )
@@ -149,20 +153,28 @@ def make_first_plots(cfg):
     # label_matrix_sorted = np.delete(label_matrix_sorted, k, axis=1)
 
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
+    tmpd_no_shift = (tmd_no_shift.T / np.sum(tmd_no_shift, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
+
+    tmpd_no_shift = hf.get_node_matrix(
+        tmpd_no_shift, cfg["constants"]["edge_threshold"]
+    )
     # "Plot Transition Matrix and Transition Diagram"
-    node_size = np.round(np.sum(tmd, axis=1) / np.max(np.sum(tmd, axis=1)), 2) * 100
+    node_size = (
+        np.round(np.sum(tmd_no_shift, axis=1) / np.max(np.sum(tmd_no_shift, axis=1)), 2)
+        * 500
+    )
     # get them into the right order
     # nice labels
     xlabels = []
     ylabels = []
-    for x, y in zip(label_matrix_sorted[0, :], label_matrix_sorted[:, 0]):
+    for x, y in zip(label_matrix_shift[0, :], label_matrix_shift[:, 0]):
         xlabels.append(x[1])
         ylabels.append(y[0])
 
     pf.plot_transition_diagram(
-        tmpd,
-        label_matrix_sorted[:, 0],
+        tmpd_no_shift,
+        ylabels,
         node_size,
         cfg["constants"]["edge_width"],
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph_simple.pdf",
