@@ -175,8 +175,6 @@ def get_transition_matrix(bout, unique_labels):
     - transM (numpy array): Transition matrix.
     - transM_prob (numpy array): Transition probability matrix.
     """
-    # BUG: unique_labels is not used
-    # unique_labels = unique_labels[:5]
 
     transM = np.zeros((len(unique_labels), len(unique_labels)))
     transM_prob = np.zeros((len(unique_labels), len(unique_labels)))
@@ -188,7 +186,7 @@ def get_transition_matrix(bout, unique_labels):
         transM[numbers[idx], numbers[idx + 1]] += 1
 
     # Normalize transition matrix
-    transM_prob = (transM.T / np.sum(transM, axis=0)).T
+    transM_prob = (transM.T / np.sum(transM, axis=1)).T
     transM = transM.astype(int)
 
     return transM, transM_prob
@@ -217,7 +215,8 @@ def get_transition_matrix_befor_following_syl(bout, unique_lables):
         transM_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
         transM_prob_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
 
-    transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
+    # BUG: Transition Maxtrix is not updated
+    # transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
     transM_bsf = transM_bsf.astype(int)
 
     return transM_bsf, transM_prob_bsf
