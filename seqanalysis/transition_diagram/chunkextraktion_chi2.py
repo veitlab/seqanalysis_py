@@ -67,7 +67,8 @@ def make_states_of_syl_chi2(seqs):
     for idx1, syly in enumerate(unq):
         for idx2, sylx in enumerate(unq):
             for idx3, sylz in enumerate(unq):
-                sylM_bsf[idx2, idx1, idx3] = syly + sylx + sylz
+                # BUG: this was idx2, idx1, idx3
+                sylM_bsf[idx1, idx2, idx3] = syly + sylx + sylz
 
     # clean up matrix and remove small branches and single lines ------------------------------------------------------
 
@@ -81,17 +82,16 @@ def make_states_of_syl_chi2(seqs):
 
     # remove Y transitions because Y doesn't depend on anything
     rowY = unq.index("Y")
+    # BUG: this should not be the row but is the column
     tm_sf2[rowY, :] = 0
 
     # save tm_bsf
     test_tm_bsf = tm_bsf
+    # WARNING: is this the correct way to sum the columns? shoulnd it be axis=1 istead of axis=0?
     sumcol = np.sum(np.sum(tm_bsf, axis=2), axis=0)
 
     # Chi2 Test -------------------------------------------------------------------------------------------------------
     # NOTE: chi2 Test
-
-    embed()
-    exit()
     # chi2 test
     h = np.full((len(unq), len(unq)), np.nan)
     chi = np.full((len(unq), len(unq)), np.nan)
@@ -101,16 +101,33 @@ def make_states_of_syl_chi2(seqs):
     # than 1% of the total times this syllable is observed
     for idx1 in range(len(test_tm_bsf)):
         for idx2 in range(len(test_tm_bsf)):
+            # BUG:this should not be the sum of but every element in the row
             if np.sum(test_tm_bsf[idx1, idx2]) / sumcol[idx2] <= 0.01:
                 test_tm_bsf[idx1, idx2] = 0
 
-    #
+    # NOTE: suggested code
+    # for idx1 in range(len(unq)):
+    #     for idx2 in range(len(unq)):
+    #         for idx3 in range(len(unq)):
+    #             if test_tm_bsf[idx2, idx2, idx3] / sumcol[idx2] <= 0.01:
+    #                 test_tm_bsf[idx1, idx2, idx3] = 0
+    # and prettier but dont know if this is better or even works
+    # for idx1 in range(len(unq)):
+    #   test_tm_bsf[:, idx1][(test_tm_bsf[:, idx1]/sumcol[idx1])<= 0.01] = 0
+
     test_sylM_bsf = np.zeros((len(unq), len(unq), len(unq)), "U3")
     for idx1 in range(len(unq)):
+        # NOTE: Adding check if the sum of the row is 0 to avoid division by zero
+        if np.sum(tm_sf2[idx1]) == 0:
+            continue
         existingpostsyls = np.argwhere(tm_sf2[idx1] / np.sum(tm_sf2[idx1]) > 0.01)
+        numstates = len(np.unique(np.nonzero(test_tm_bsf[:, idx1])[0]))
+        # NOTE: this is should produce the same result for entering the if statement?
+        # if len(existingpostsyls.shape[0]) > 0:
         if len(np.argwhere(tm_sf2[idx1] > 0.01)) > 0:
             for idx2 in range(len(unq)):
-                numstates = len(np.unique(np.nonzero(test_tm_bsf[:, idx1])[0]))
+                # NOTE: I dont understand the check, checks the transitons of XXX, XXY, XXc, ...
+                # and why [idx2, idx1] and not the other way around
                 if np.sum(test_tm_bsf[idx2, idx1]) > 0:
                     if np.count_nonzero(test_tm_bsf[idx2, idx1][existingpostsyls]) > 1:
                         test_sylM_bsf[idx2, idx1][existingpostsyls] = sylM_bsf[
