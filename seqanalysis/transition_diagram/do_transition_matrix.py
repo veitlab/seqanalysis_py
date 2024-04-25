@@ -188,6 +188,7 @@ def make_first_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
         cfg["title_figures"],
     )
+    log.info(f"Suggested labels {ylabels}")
     plt.show()
 
 
