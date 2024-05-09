@@ -65,7 +65,6 @@ def get_data(cfg):
         log.error(f"Path {file_list} does not exist")
         raise FileNotFoundError(f"Path {file_list} does not exist")
     file_list = list(file_list.glob("**/[!syll*][!check]*.not.mat"))
-
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
