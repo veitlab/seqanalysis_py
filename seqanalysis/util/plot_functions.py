@@ -112,6 +112,3 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
 
     # Save the plot to the specified file path with a specified DPI
     fig.savefig(save_path, dpi=300)
-    #
-    # embed()
-    # quit()

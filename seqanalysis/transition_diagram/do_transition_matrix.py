@@ -74,7 +74,7 @@ def get_data(cfg):
     cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
         seqs, cfg["labels"]["bout_chunk"]
     )
-    if cfg["labels"]["double_syl"]:
+    if cfg["labels"]["double_syl"] is None:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
         for i, (double_syll, renamed_double_syll) in enumerate(
@@ -90,7 +90,7 @@ def get_data(cfg):
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
     log.info("Replacing chunks")
-    cfg["data"]["chunk_bouts"], cfg["labels"]["renamed_chunks"] = hf.replace_chunks(
+    cfg["data"]["chunk_bouts"], cfg["labels"]["chunks_renamed"] = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
     )
 
@@ -172,7 +172,7 @@ def make_first_plots(cfg):
         node_size,
         cfg["constants"]["edge_width"],
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph_simple.pdf",
-        cfg["title_figures"],
+        cfg["title_figures"] + " simple",
     )
 
     pf.plot_transition_matrix(
@@ -180,12 +180,12 @@ def make_first_plots(cfg):
         xlabels,
         ylabels,
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
-        cfg["title_figures"],
+        cfg["title_figures"] + " simple",
     )
     log.info("Suggestion for labels")
     for lab in ylabels:
         print(f"- {lab}")
-    for ch in cfg["labels"]["renamed_chunks"]:
+    for ch in cfg["labels"]["chunks_renamed"]:
         print(f"- {ch[1]}")
     plt.show()
 
@@ -204,8 +204,8 @@ def make_final_plots(cfg):
             labelylabelx = str(labely + labelx)
             label_matrix_check[i, j] = labelylabelx
 
-    log.debug(f"Unique labels of Chunks: {unique_labels}\n")
-    print(f"Label matrix:\n {label_matrix_check[:, 0]}")
+    log.info(f"Unique labels of Chunks: {unique_labels}\n")
+    log.info(f"Label matrix:\n {label_matrix_check[:, 0]}")
     tm, tmp = hf.get_transition_matrix(bouts, unique_labels)
 
     # Filter out nodes with low occurrence
@@ -215,7 +215,7 @@ def make_final_plots(cfg):
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
     label_matrix_check = np.delete(label_matrix_check, k, axis=0)
-    print(f"Updated label matrix:\n {label_matrix_check[:, 0]}")
+    log.info(f"Updated label matrix:\n {label_matrix_check[:, 0]}")
 
     unique_labels = np.delete(unique_labels, k)
     # U2 is the size of the strings in zeros
@@ -258,6 +258,7 @@ def make_final_plots(cfg):
     # Normalize transition matrix and create node matrix
     tmpd = (tm_sorted_shift.T / np.sum(tm_sorted_shift, axis=1)).T
     tmpd_no_shift = (tm_sorted_no_shift.T / np.sum(tm_sorted_no_shift, axis=1)).T
+
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
     tmpd_no_shift = hf.get_node_matrix(
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
@@ -271,12 +272,12 @@ def make_final_plots(cfg):
     xlabels = []
     ylabels = []
     for x, y in zip(label_matrix_shift[0, :], label_matrix_shift[:, 0]):
-        renamedch = [ch[1] for ch in cfg["labels"]["renamed_chunks"]]
-        ch = [ch[0] for ch in cfg["labels"]["renamed_chunks"]]
+        renamedch = [ch[1] for ch in cfg["labels"]["chunks_renamed"]]
+        ch = [ch[0] for ch in cfg["labels"]["chunks_renamed"]]
         if x[1] in renamedch:
             xlabels.append(ch[renamedch.index(x[1])])
         elif x[1] == "_":
-            xlabels.append("Start")
+            xlabels.append("End")
         else:
             xlabels.append(x[1])
 
@@ -311,30 +312,31 @@ def main(yaml_file, analyse_files):
         cfg = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
 
-    if not cfg["data"]["bouts"]:
-        log.info("No bouts found in yaml file")
-        if analyse_files == "all":
-            cfg = get_data(cfg)
-        elif analyse_files == "catch":
-            cfg = get_catch_data(cfg)
+        if not cfg["data"]["bouts"]:
+            log.info("No bouts found in yaml file")
+            if analyse_files == "all":
+                cfg = get_data(cfg)
+            elif analyse_files == "catch":
+                cfg = get_catch_data(cfg)
 
-        make_first_plots(cfg)
-        log.info(
-            f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
-        )
-        # make_final_plots(cfg)
+            if cfg["nonchunk_plot"]:
+                make_first_plots(cfg)
 
-    else:
-        # log.info(
-        #     f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
-        # )
-        # print('{} Unique labels of Chunks: '.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
         make_final_plots(cfg)
 
-    with open(yaml_file, "w") as f:
-        yaml.dump(cfg, f)
-        # print(yaml.dump(cfg))
-        f.close()
+        user_input = input("Do you want to save the yaml file? (y/n): ")
+
+        match user_input:
+            case "y" | "Y":
+                with open(yaml_file, "w") as f:
+                    yaml.dump(cfg, f)
+                    # print(yaml.dump(cfg))
+                    f.close()
+            case "n" | "N":
+                log.info("Yaml file not saved")
+            case _:
+                log.error("Invalid input")
+                raise ValueError("Invalid input")
 
 
 if __name__ == "__main__":
