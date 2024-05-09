@@ -64,7 +64,8 @@ def get_data(cfg):
     if not file_list.exists():
         log.error(f"Path {file_list} does not exist")
         raise FileNotFoundError(f"Path {file_list} does not exist")
-    file_list = list(file_list.glob("**/*.not.mat"))
+    file_list = list(file_list.glob("**/[!syll*][!check]*.not.mat"))
+
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
@@ -306,21 +307,27 @@ def make_final_plots(cfg):
     )
     plt.show()
 
+    # for lab in ylabels:
+    #     print(f"- {lab}")
+    # if cfg["labels"]["unique_labels"]:
+    #     for lab in cfg["labels"]["unique_labels"]:
+    #         renamedch = [ch[1] for ch in cfg["labels"]["chunks_renamed"]]
+    #         ch = [ch[0] for ch in cfg["labels"]["chunks_renamed"]]
+
 
 def main(yaml_file, analyse_files):
     with open(yaml_file) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
 
-        if not cfg["data"]["bouts"]:
-            log.info("No bouts found in yaml file")
-            if analyse_files == "all":
-                cfg = get_data(cfg)
-            elif analyse_files == "catch":
-                cfg = get_catch_data(cfg)
+        log.info("No bouts found in yaml file")
+        if analyse_files == "all":
+            cfg = get_data(cfg)
+        elif analyse_files == "catch":
+            cfg = get_catch_data(cfg)
 
-            if cfg["nonchunk_plot"]:
-                make_first_plots(cfg)
+        if cfg["nonchunk_plot"]:
+            make_first_plots(cfg)
 
         make_final_plots(cfg)
 

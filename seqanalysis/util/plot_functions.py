@@ -33,6 +33,7 @@ def plot_transition_matrix(matrix, labelx, labely, save_path, title):
         yticklabels=labely,
     )
     ax.set_yticklabels(hm.get_yticklabels(), rotation=0)
+    ax.set_xticklabels(hm.get_xticklabels(), rotation=0)
     ax.tick_params(left=False, bottom=False)
     sns.despine(top=False, right=False, left=False, bottom=False)
     ax.set_title(title)
