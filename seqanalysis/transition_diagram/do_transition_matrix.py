@@ -1,7 +1,7 @@
-import glob
 import pathlib
 import re
 import sys
+import string
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +16,7 @@ log = config_logging()
 
 
 def get_catch_data(cfg):
+    # BUG: This function is not working properly
     # assembles the files in the path
     file_list = []
     files_path = pathlib.Path(cfg["paths"]["catch_path"])
@@ -51,7 +52,7 @@ def get_catch_data(cfg):
     else:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
-    cfg["data"]["chunk_bouts"] = hf.replace_chunks(
+    cfg["data"]["chunk_bouts"], ch = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
     )
 
@@ -62,11 +63,11 @@ def get_data(cfg):
     file_list = pathlib.Path((cfg["paths"]["folder_path"]))
     if not file_list.exists():
         log.error(f"Path {file_list} does not exist")
-        FileNotFoundError(f"Path {file_list} does not exist")
-    file_list = list(file_list.glob("*/*.not.mat"))
+        raise FileNotFoundError(f"Path {file_list} does not exist")
+    file_list = list(file_list.glob("**/*.not.mat"))
     if not file_list:
         log.error(f"No files found in {file_list}")
-        FileNotFoundError(f"No files found in {file_list}")
+        raise FileNotFoundError(f"No files found in {file_list}")
     log.info(f"Files found: {len(file_list)}")
 
     seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
@@ -74,25 +75,22 @@ def get_data(cfg):
         seqs, cfg["labels"]["bout_chunk"]
     )
     if cfg["labels"]["double_syl"]:
+        cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
-        for i in range(len(cfg["labels"]["double_syl"])):
-            if i == 0:
-                cfg["data"]["bouts_rep"] = re.sub(
-                    cfg["labels"]["double_syl"][i],
-                    cfg["labels"]["double_syl_rep"][i],
-                    cfg["data"]["bouts"],
-                )
-            else:
-                cfg["data"]["bouts_rep"] = re.sub(
-                    cfg["labels"]["double_syl"][i],
-                    cfg["labels"]["double_syl_rep"][i],
-                    cfg["data"]["bouts_rep"],
-                )
+        for i, (double_syll, renamed_double_syll) in enumerate(
+            zip(cfg["labels"]["double_syl"], cfg["labels"]["double_syl_rep"])
+        ):
+            log.info(f"Replacing {double_syll} with {renamed_double_syll}")
+            cfg["data"]["bouts_rep"] = re.sub(
+                double_syll,
+                renamed_double_syll,
+                cfg["data"]["bouts_rep"],
+            )
     else:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
     log.info("Replacing chunks")
-    cfg["data"]["chunk_bouts"] = hf.replace_chunks(
+    cfg["data"]["chunk_bouts"], cfg["labels"]["renamed_chunks"] = hf.replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
     )
 
@@ -100,6 +98,7 @@ def get_data(cfg):
 
 
 def make_first_plots(cfg):
+    np.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize)
     bouts = cfg["data"]["bouts_rep"]
     # unique_labels in bouts
     unique_labels = sorted(list(set(bouts)))
@@ -123,13 +122,13 @@ def make_first_plots(cfg):
     label_matrix_sorted[0] = label_matrix[0]
     for i in range(1, tm.shape[0]):
         for sort in np.argsort(tm_sorted[i - 1])[::-1]:
-            log.info(sort)
+            log.debug(sort)
             if sort not in _multiple_index:
-                log.info(_multiple_index)
+                log.debug(_multiple_index)
                 tm_sorted[i] = tm[sort]
                 label_matrix_sorted[i] = label_matrix[sort]
                 _multiple_index.append(sort)
-                log.info(_multiple_index)
+                log.debug(_multiple_index)
                 break
             else:
                 continue
@@ -144,24 +143,19 @@ def make_first_plots(cfg):
 
     tmd = tm_sorted_shift.astype(int)
     tmd_no_shift = tm_sorted_no_shift.astype(int)
-    # k = np.where(
-    #     np.sum(tm, axis=0) / np.sum(tm) * 100 <= cfg["constants"]["node_threshold"]
-    # )
-    # tmd = np.delete(tm, k, axis=1)
-    # tmd = np.delete(tmd, k, axis=0)
-    # label_matrix_sorted = np.delete(label_matrix_sorted, k, axis=0)
-    # label_matrix_sorted = np.delete(label_matrix_sorted, k, axis=1)
 
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd_no_shift = (tmd_no_shift.T / np.sum(tmd_no_shift, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
-
     tmpd_no_shift = hf.get_node_matrix(
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
     )
+
     # "Plot Transition Matrix and Transition Diagram"
     node_size = (
-        np.round(np.sum(tmd_no_shift, axis=1) / np.max(np.sum(tmd_no_shift, axis=1)), 2)
+        np.round(
+            np.sum(tmpd_no_shift, axis=1) / np.max(np.sum(tmpd_no_shift, axis=1)), 2
+        )
         * 500
     )
     # get them into the right order
@@ -188,41 +182,125 @@ def make_first_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
         cfg["title_figures"],
     )
-    log.info(f"Suggested labels {ylabels}")
+    log.info("Suggestion for labels")
+    for lab in ylabels:
+        print(f"- {lab}")
+    for ch in cfg["labels"]["renamed_chunks"]:
+        print(f"- {ch[1]}")
     plt.show()
 
 
 def make_final_plots(cfg):
+    np.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize)
     bouts = cfg["data"]["chunk_bouts"]
-    tm, tmp = hf.get_transition_matrix(bouts, cfg["labels"]["unique_labels"])
-    print(tmp)
+    unique_labels = sorted(list(set(bouts)))
+    # place "_" at the beginning of the list
+    unique_labels.remove("_")
+    unique_labels.insert(0, "_")
+    unique_labels = np.array(unique_labels)
+    label_matrix_check = np.zeros((len(unique_labels), len(unique_labels)), "U2")
+    for i, labely in enumerate(unique_labels):
+        for j, labelx in enumerate(unique_labels):
+            labelylabelx = str(labely + labelx)
+            label_matrix_check[i, j] = labelylabelx
+
+    log.debug(f"Unique labels of Chunks: {unique_labels}\n")
+    print(f"Label matrix:\n {label_matrix_check[:, 0]}")
+    tm, tmp = hf.get_transition_matrix(bouts, unique_labels)
 
     # Filter out nodes with low occurrence
-    k = np.where(sum(tm) / sum(sum(tm)) * 100 <= cfg["constants"]["node_threshold"])
+    k = np.where(
+        (np.sum(tm, axis=0) / np.sum(tm)) * 100 <= cfg["constants"]["node_threshold"]
+    )
     tmd = np.delete(tm, k, axis=1)
     tmd = np.delete(tmd, k, axis=0)
-    print(np.delete(cfg["labels"]["unique_labels"], k))
+    label_matrix_check = np.delete(label_matrix_check, k, axis=0)
+    print(f"Updated label matrix:\n {label_matrix_check[:, 0]}")
+
+    unique_labels = np.delete(unique_labels, k)
+    # U2 is the size of the strings in zeros
+    label_matrix = np.zeros((len(unique_labels), len(unique_labels)), "U2")
+    for i, labely in enumerate(unique_labels):
+        for j, labelx in enumerate(unique_labels):
+            labelylabelx = str(labely + labelx)
+            label_matrix[i, j] = labelylabelx
+
+    tm_sorted = np.zeros(tmd.shape)
+    label_matrix_sorted = np.zeros((len(unique_labels), len(unique_labels)), "U2")
+    _multiple_index = [0]
+    # NOTE: Add the first element befor entering the loop
+    tm_sorted[0] = tmd[0]
+    label_matrix_sorted[0] = label_matrix[0]
+    for i in range(1, tmd.shape[0]):
+        for sort in np.argsort(tm_sorted[i - 1])[::-1]:
+            log.debug(sort)
+            if sort not in _multiple_index:
+                log.debug(_multiple_index)
+                tm_sorted[i] = tmd[sort]
+                label_matrix_sorted[i] = label_matrix[sort]
+                _multiple_index.append(sort)
+                log.debug(_multiple_index)
+                break
+            else:
+                continue
+
+    # Sort the columns of the matrix
+    multiple_index_col_shift = np.roll(_multiple_index, -1)
+
+    tm_sorted_shift = tm_sorted[:, multiple_index_col_shift]
+    label_matrix_shift = label_matrix_sorted[:, multiple_index_col_shift]
+    tm_sorted_no_shift = tm_sorted[:, _multiple_index]
+    label_matrix_no_shift = label_matrix_sorted[:, _multiple_index]
+
+    tmd = tm_sorted_shift.astype(int)
+    tmd_no_shift = tm_sorted_no_shift.astype(int)
 
     # Normalize transition matrix and create node matrix
-    tmpd = (tmd.T / np.sum(tmd, axis=1)).T
+    tmpd = (tm_sorted_shift.T / np.sum(tm_sorted_shift, axis=1)).T
+    tmpd_no_shift = (tm_sorted_no_shift.T / np.sum(tm_sorted_no_shift, axis=1)).T
     tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
+    tmpd_no_shift = hf.get_node_matrix(
+        tmpd_no_shift, cfg["constants"]["edge_threshold"]
+    )
     node_size = (
-        np.round(np.sum(tmd, axis=1) / np.min(np.sum(tmd, axis=1)), 2)
+        np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
         * cfg["constants"]["node_size"]
     )
     "Plot Transition Matrix and Transition Diagram"
-    pf.plot_transition_matrix(
-        tmpd,
-        cfg["labels"]["node_labels"],
-        cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix.pdf",
-        cfg["title_figures"],
-    )
+
+    xlabels = []
+    ylabels = []
+    for x, y in zip(label_matrix_shift[0, :], label_matrix_shift[:, 0]):
+        renamedch = [ch[1] for ch in cfg["labels"]["renamed_chunks"]]
+        ch = [ch[0] for ch in cfg["labels"]["renamed_chunks"]]
+        if x[1] in renamedch:
+            xlabels.append(ch[renamedch.index(x[1])])
+        elif x[1] == "_":
+            xlabels.append("Start")
+        else:
+            xlabels.append(x[1])
+
+        if y[0] in renamedch:
+            ylabels.append(ch[renamedch.index(y[0])])
+        elif y[0] == "_":
+            ylabels.append("Start")
+        else:
+            ylabels.append(y[0])
+
     pf.plot_transition_diagram(
-        tmpd,
-        cfg["labels"]["node_labels"],
+        tmpd_no_shift,
+        ylabels,
         node_size,
         cfg["constants"]["edge_width"],
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
+        cfg["title_figures"],
+    )
+
+    pf.plot_transition_matrix(
+        tmpd,
+        xlabels,
+        ylabels,
+        cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix.pdf",
         cfg["title_figures"],
     )
     plt.show()
@@ -244,12 +322,12 @@ def main(yaml_file, analyse_files):
         log.info(
             f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
         )
-        make_final_plots(cfg)
+        # make_final_plots(cfg)
 
     else:
-        log.info(
-            f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
-        )
+        # log.info(
+        #     f"Unique labels of Chunks: {sorted(list(set(cfg["data"]["chunk_bouts"])))}\n"
+        # )
         # print('{} Unique labels of Chunks: '.format(sorted(list(set(cfg['data']['chunk_bouts'])))))
         make_final_plots(cfg)
 

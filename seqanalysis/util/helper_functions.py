@@ -74,7 +74,7 @@ def replace_intro_notes(s, intro_notes):
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
-        temp[i] = "i"
+        temp[i] = "x"
 
     s = "".join(temp)
 
@@ -93,10 +93,12 @@ def replace_chunks(s, chunks):
     - s (str): Sequence with replaced chunks.
     """
     asci_letters = list(string.ascii_uppercase)
+    ch = []
     for i, chunk in enumerate(chunks):
-        log.info(f"Replacing chunk: {chunks[i]}, with {asci_letters[i]}")
+        log.info(f"Replacing chunk: {chunk}, with {asci_letters[i]}")
+        ch.append((chunk, asci_letters[i]))
         s = re.sub(chunk, asci_letters[i], s)
-    return s
+    return s, ch
 
 
 def get_syl_dur():
