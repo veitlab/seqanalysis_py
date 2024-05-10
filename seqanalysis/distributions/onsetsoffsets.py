@@ -157,7 +157,7 @@ def plot_pause(pause_df, syll_of_interest, mult_syllabels, pause_type="pauses_be
             )
             if row_first_syll["labels"] != matches[0][matches_specific_syll[0]]:
                 log.error("Label is not the same")
-            pauses_onsets[f"{syllabels}"].append(row_first_syll[pause_type])
+                pauses_onsets[f"{syllabels}"].append(row_first_syll[pause_type])
 
     ax.boxplot(
         pauses_onsets.values(),
