@@ -31,7 +31,7 @@ def get_catch_data(cfg):
                 [list[i] + item.rstrip() + ".not.mat" for item in line_list]
             )
 
-    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
+    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"], cfg["labels"]["intro_notes_replacement"])
     cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
         seqs, cfg["labels"]["bout_chunk"]
     )
@@ -64,16 +64,16 @@ def get_data(cfg):
     if not file_list.exists():
         log.error(f"Path {file_list} does not exist")
         raise FileNotFoundError(f"Path {file_list} does not exist")
-    file_list = list(file_list.glob("**/[!syll*][!check]*.not.mat"))
+    file_list = list(file_list.glob(f"**/*{cfg['bird_id']}*.not.mat"))
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
     log.info(f"Files found: {len(file_list)}")
 
-    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"])
-    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
-        seqs, cfg["labels"]["bout_chunk"]
-    )
+    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"], cfg["labels"]["intro_notes_replacement"])
+
+    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(seqs, cfg["labels"]["bout_chunk"])
+
     if cfg["labels"]["double_syl"] is None:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
