@@ -74,8 +74,10 @@ def replace_intro_notes(s, intro_notes, replacement):
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
-        temp[i] = replacement
+        temp[i] = replacement[0]
 
+    embed()
+    exit()
     s = "".join(temp)
 
     return s
