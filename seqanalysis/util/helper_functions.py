@@ -20,7 +20,7 @@ def get_data(path, intro_notes, bout_chunk):
     return bouts
 
 
-def get_labels(mat_list, notes):
+def get_labels(mat_list, notes, intro_replacement):
     """
     Extracts sequence labels from a list of .mat files.
 
@@ -41,7 +41,7 @@ def get_labels(mat_list, notes):
 
         if len(notes) > 0:
             try:
-                labels = replace_intro_notes(labels, notes)
+                labels = replace_intro_notes(labels, notes, intro_replacement)
                 log.debug(f"Intro notes replaced in file: {matidx}")
             except ValueError:
                 log.error(f"Intro notes not found in file: {matidx} ")
@@ -52,7 +52,7 @@ def get_labels(mat_list, notes):
     return seqs
 
 
-def replace_intro_notes(s, intro_notes):
+def replace_intro_notes(s, intro_notes, replacement):
     """
     Replaces introductory notes in a sequence.
 
@@ -74,7 +74,7 @@ def replace_intro_notes(s, intro_notes):
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
-        temp[i] = "x"
+        temp[i] = replacement
 
     s = "".join(temp)
 
