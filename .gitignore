@@ -5,3 +5,5 @@ env
 *.yaml
 !template.yaml
 !gr88gr06.yaml
+venv
+.idea\
