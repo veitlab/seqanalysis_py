@@ -15,21 +15,21 @@ from seqanalysis.util.logging import config_logging
 log = config_logging()
 
 
-def get_catch_data(folder_path):
+def get_analyse_files_data(folder_path: pathlib.Path, analyse: str):
     file_list = []
-    catch_files = list(folder_path.glob(("**/*batch.catch")))
-    if not catch_files:
+    analyse_files = list(folder_path.glob((f"**/*{analyse}")))
+    if not analyse_files:
         log.error(f"No catch files found in {folder_path}")
         FileNotFoundError(f"No catch files found in {folder_path}")
-    for catch_file in catch_files:
-        if not catch_file.exists():
-            log.error(f"File {catch_file} does not exist")
-            FileNotFoundError(f"File {catch_file} does not exist")
-        with open(catch_file, "r") as file:
+    for analyse_file in analyse_files:
+        if not analyse_file.exists():
+            log.error(f"File {analyse_file} does not exist, skipping folder")
+            continue
+        with open(analyse_file, "r") as file:
             line_list = file.readlines()
             file_list.extend(
                 [
-                    (catch_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
+                    (analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
                     for catch_song_file in line_list
                 ]
             )
@@ -37,18 +37,13 @@ def get_catch_data(folder_path):
     return file_list
 
 
-def get_data(cfg, catch: bool = False):
+def get_data(cfg, analyse_files: str):
     folder_path = pathlib.Path((cfg["paths"]["folder_path"]))
     if not folder_path.exists():
         log.error(f"Path {folder_path} does not exist")
         raise FileNotFoundError(f"Path {folder_path} does not exist")
 
-    if catch:
-        log.info("Getting catch data")
-        file_list = get_catch_data(folder_path)
-    else:
-        log.info("Getting all data")
-        file_list = list(folder_path.glob(f"**/*{cfg['bird_id']}*.not.mat"))
+    file_list = get_analyse_files_data(folder_path, analyse_files)
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
@@ -311,10 +306,7 @@ def main(yaml_file, analyse_files):
 
         log.info("No bouts found in yaml file")
 
-        if analyse_files == "all":
-            cfg = get_data(cfg)
-        elif analyse_files == "catch":
-            cfg = get_data(cfg, catch=True)
+        cfg = get_data(cfg, analyse_files)
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)
