@@ -1,7 +1,6 @@
 import pathlib
 import re
 import sys
-import string
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,7 +46,7 @@ def get_data(cfg, analyse_files: str):
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
-    log.info(f"Files found: {len(file_list)}")
+    log.info(f"Files found: {len(file_list)} in {analyse_files} files")
 
     seqs = hf.get_labels(
         file_list,
@@ -167,11 +166,11 @@ def make_first_plots(cfg):
         cfg["paths"]["save_path"] + cfg["title_figures"] + "_matrix_simple.pdf",
         cfg["title_figures"] + " simple",
     )
-    log.info("Suggestion for labels")
-    for lab in ylabels:
-        print(f"- {lab}")
-    for ch in cfg["labels"]["chunks_renamed"]:
-        print(f"- {ch[1]}")
+    # log.info("Suggestion for labels")
+    # for lab in ylabels:
+    #     print(f"- {lab}")
+    # for ch in cfg["labels"]["chunks_renamed"]:
+    #     print(f"- {ch[1]}")
     plt.show()
 
 
