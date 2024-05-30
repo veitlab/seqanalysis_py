@@ -33,7 +33,12 @@ def get_labels(mat_list, notes, intro_replacement):
     """
     seqs = []
     for matidx in mat_list:
-        mat = sio.loadmat(matidx)
+        try:
+            mat = sio.loadmat(matidx)
+        except OSError:
+            log.error(f"File not found: {matidx}")
+            continue
+
         log.debug(f"Processing file: {matidx}")
 
         labels = mat["labels"][0]
@@ -76,8 +81,6 @@ def replace_intro_notes(s, intro_notes, replacement):
     for i in range(1, np.min(motiv_start)):
         temp[i] = replacement[0]
 
-    embed()
-    exit()
     s = "".join(temp)
 
     return s

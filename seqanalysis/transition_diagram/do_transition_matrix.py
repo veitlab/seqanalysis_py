@@ -15,64 +15,54 @@ from seqanalysis.util.logging import config_logging
 log = config_logging()
 
 
-def get_catch_data(cfg):
-    # BUG: This function is not working properly
-    # assembles the files in the path
+def get_catch_data(folder_path):
     file_list = []
-    files_path = pathlib.Path(cfg["paths"]["catch_path"])
-    if not files_path.exists():
-        log.error(f"Path {files_path} does not exist")
-        FileNotFoundError(f"Path {files_path} does not exist")
-    files = list(files_path.glob("*/*.not.mat"))
-    for i in range(len(files)):
-        with open(files[i] + cfg["paths"]["catch_file"], "r") as file:
+    catch_files = list(folder_path.glob(("**/*batch.catch")))
+    if not catch_files:
+        log.error(f"No catch files found in {folder_path}")
+        FileNotFoundError(f"No catch files found in {folder_path}")
+    for catch_file in catch_files:
+        if not catch_file.exists():
+            log.error(f"File {catch_file} does not exist")
+            FileNotFoundError(f"File {catch_file} does not exist")
+        with open(catch_file, "r") as file:
             line_list = file.readlines()
             file_list.extend(
-                [list[i] + item.rstrip() + ".not.mat" for item in line_list]
+                [
+                    (catch_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
+                    for catch_song_file in line_list
+                ]
             )
 
-    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"], cfg["labels"]["intro_notes_replacement"])
-    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
-        seqs, cfg["labels"]["bout_chunk"]
-    )
-    if cfg["labels"]["double_syl"] != [None]:
-        for i in range(len(cfg["labels"]["double_syl"])):
-            if i == 0:
-                cfg["data"]["bouts_rep"] = re.sub(
-                    cfg["labels"]["double_syl"][i],
-                    cfg["labels"]["double_syl_rep"][i],
-                    cfg["data"]["bouts"],
-                )
-            else:
-                cfg["data"]["bouts_rep"] = re.sub(
-                    cfg["labels"]["double_syl"][i],
-                    cfg["labels"]["double_syl_rep"][i],
-                    cfg["data"]["bouts_rep"],
-                )
+    return file_list
+
+
+def get_data(cfg, catch: bool = False):
+    folder_path = pathlib.Path((cfg["paths"]["folder_path"]))
+    if not folder_path.exists():
+        log.error(f"Path {folder_path} does not exist")
+        raise FileNotFoundError(f"Path {folder_path} does not exist")
+
+    if catch:
+        log.info("Getting catch data")
+        file_list = get_catch_data(folder_path)
     else:
-        cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
-
-    cfg["data"]["chunk_bouts"], ch = hf.replace_chunks(
-        cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
-    )
-
-    return cfg
-
-
-def get_data(cfg):
-    file_list = pathlib.Path((cfg["paths"]["folder_path"]))
-    if not file_list.exists():
-        log.error(f"Path {file_list} does not exist")
-        raise FileNotFoundError(f"Path {file_list} does not exist")
-    file_list = list(file_list.glob(f"**/*{cfg['bird_id']}*.not.mat"))
+        log.info("Getting all data")
+        file_list = list(folder_path.glob(f"**/*{cfg['bird_id']}*.not.mat"))
     if not file_list:
         log.error(f"No files found in {file_list}")
         raise FileNotFoundError(f"No files found in {file_list}")
     log.info(f"Files found: {len(file_list)}")
 
-    seqs = hf.get_labels(file_list, cfg["labels"]["intro_notes"], cfg["labels"]["intro_notes_replacement"])
+    seqs = hf.get_labels(
+        file_list,
+        cfg["labels"]["intro_notes"],
+        cfg["labels"]["intro_notes_replacement"],
+    )
 
-    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(seqs, cfg["labels"]["bout_chunk"])
+    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
+        seqs, cfg["labels"]["bout_chunk"]
+    )
 
     if cfg["labels"]["double_syl"] is None:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
@@ -320,10 +310,11 @@ def main(yaml_file, analyse_files):
         f.close()
 
         log.info("No bouts found in yaml file")
+
         if analyse_files == "all":
             cfg = get_data(cfg)
         elif analyse_files == "catch":
-            cfg = get_catch_data(cfg)
+            cfg = get_data(cfg, catch=True)
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)
