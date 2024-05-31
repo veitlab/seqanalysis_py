@@ -1,9 +1,7 @@
 import seaborn as sns
-import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 from seqanalysis.util.logging import config_logging
-import plotly.graph_objects as go
 from IPython import embed
 from dash import Dash, dcc, html
 import dash_cytoscape as cyto
@@ -81,14 +79,38 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         {
             "data": {"id": str(node), "label": label},
             "position": {"x": pos[0], "y": pos[1]},
+            "classes": str(node),
         }
-        for node, label, pos in zip(Graph.nodes, labels, positions.values())
+        for node, label, pos, node_s in zip(
+            Graph.nodes, labels, positions.values(), node_size
+        )
     ]
     edges = [
-        {"data": {"source": str(source), "target": str(target), "weight": weight}}
+        {
+            "data": {
+                "source": str(source),
+                "target": str(target),
+                "weight": weight / 10,
+                "classes": str(source) + str(target),
+            }
+        }
         for source, target, weight in Graph.edges(data="weight")
     ]
     elements = nodes + edges
+    # create different widht and height for the nodes
+
+    node_sizes = [
+        {
+            "selector": "." + str(node),
+            "style": {
+                "shape": "circle",
+                "label": "data(label)",
+                "width": w / 100,
+                "height": h / 100,
+            },
+        }
+        for node, w, h in zip(Graph.nodes, node_size, node_size)
+    ]
     app = Dash()
     app.layout = html.Div(
         [
@@ -104,67 +126,15 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                             "curve-style": "bezier",
                             "label": "data(weight)",
                             "target-arrow-shape": "triangle",
+                            "width": "data(weight)",
                         },
                     },
-                    {
-                        "selector": "nodes",
-                        "style": {
-                            "shape": "circle",
-                            "label": "data(label)",
-                        },
-                    },
+                    *node_sizes,
                 ],
             )
         ]
     )
     app.run_server(debug=True, use_reloader=False)  #
-    embed()
-    exit()
-
-    #
-    # node_trace = go.Scatter(
-    #     x=x_pos,
-    #     y=y_pos,
-    #     mode="markers",
-    #     marker=dict(size=node_size, color="orange"),
-    #     text=labels,
-    #     hoverinfo="text",
-    # )
-    # edge_trace = go.Scatter(
-    #     x=x_pos,
-    #     y=y_pos,
-    #     line=dict(width=edge_width, color="black"),
-    #     hoverinfo="none",
-    #     mode="lines",
-    # )
-    # fig = go.Figure(
-    #     data=[edge_trace, node_trace],
-    #     layout=go.Layout(
-    #         title="<br>Network graph made with Python",
-    #         titlefont_size=16,
-    #         showlegend=False,
-    #         hovermode="closest",
-    #         margin=dict(b=20, l=5, r=5, t=40),
-    #         annotations=[
-    #             dict(
-    #                 text="Transition Diagram",
-    #                 showarrow=False,
-    #                 xref="paper",
-    #                 yref="paper",
-    #                 x=0.005,
-    #                 y=-0.002,
-    #             )
-    #         ],
-    #         # xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-    #         # yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-    #     ),
-    # )
-
-    app.layout = html.Div([dcc.Graph(figure=fig)])
-
-    app.run_server(debug=True, use_reloader=False)  #
-    embed()
-    exit()
 
     # Create a subplot with a specified size and margins
     fig, ax = plt.subplots(figsize=(21 / 2.54, 19 / 2.54))

@@ -45,6 +45,7 @@ def chi2_dist(dist1, dist2, alpha):
     diff = obs_dist - exp_dist
     norm_diff = (diff**2) / exp_dist
     chi2 = np.sum(norm_diff)
+    # Cumulative Distribution Function: this is the mass of probability of the function up to a given point;
     p = 1 - stats.chi2.cdf(chi2, df)
 
     if p < alpha:
@@ -59,8 +60,6 @@ def make_states_of_syl_chi2(seqs):
     # unique syl
     unq = sorted(list(set(seqs)))
 
-    embed()
-    exit()
     # prob of all syls to all possible following syl
     tm_sf, tmp_sf = hf.get_transition_matrix(seqs, unq)
     sylM_sf = np.zeros((len(unq), len(unq)), "U2")
@@ -104,12 +103,12 @@ def make_states_of_syl_chi2(seqs):
 
     # go through all cells and delete whole if sum within the list is less
     # than 1% of the total times this syllable is observed
-    for idx1 in range(len(test_tm_bsf)):
-        for idx2 in range(len(test_tm_bsf)):
-            # BUG:this should not be the sum of but every element in the row
-            if np.sum(test_tm_bsf[idx1, idx2]) / sumcol[idx2] <= 0.01:
-                test_tm_bsf[idx1, idx2] = 0
-
+    # for idx1 in range(len(test_tm_bsf)):
+    #     for idx2 in range(len(test_tm_bsf)):
+    #         # BUG:this should not be the sum of but every element in the row
+    #         if np.sum(test_tm_bsf[idx1, idx2]) / sumcol[idx2] <= 0.01:
+    #             test_tm_bsf[idx1, idx2] = 0
+    #
     # BUG: the Code is not deleting transitions that come from the intro syll in the tm_bsf
 
     # NOTE: suggested code
@@ -119,8 +118,8 @@ def make_states_of_syl_chi2(seqs):
     #             if test_tm_bsf[idx2, idx2, idx3] / sumcol[idx2] <= 0.01:
     #                 test_tm_bsf[idx1, idx2, idx3] = 0
     # and prettier but dont know if this is better or even works
-    # for idx1 in range(len(unq)):
-    #   test_tm_bsf[:, idx1][(test_tm_bsf[:, idx1]/sumcol[idx1])<= 0.01] = 0
+    for idx1 in range(len(unq)):
+        test_tm_bsf[:, idx1][(test_tm_bsf[:, idx1] / sumcol[idx1]) <= 0.01] = 0
 
     test_sylM_bsf = np.zeros((len(unq), len(unq), len(unq)), "U3")
     for idx1 in range(len(unq)):
@@ -135,24 +134,20 @@ def make_states_of_syl_chi2(seqs):
             for idx2 in range(len(unq)):
                 if np.sum(test_tm_bsf[idx2, idx1]) > 0:
                     if np.count_nonzero(test_tm_bsf[idx2, idx1][existingpostsyls]) > 1:
+                        stacked = np.array(
+                            [
+                                np.hstack(tm_sf2[idx1][existingpostsyls]),
+                                np.hstack(test_tm_bsf[idx2, idx1][existingpostsyls]),
+                            ]
+                        )
                         h_chi2, chi_chi2, p_chi2, _, _ = chi2_dist(
                             np.hstack(tm_sf2[idx1][existingpostsyls]),
                             np.hstack(test_tm_bsf[idx2, idx1][existingpostsyls]),
                             0.01 / numstates,
                         )
-                        # res = stats.chisquare(
-                        #     np.array(
-                        #         [
-                        #             np.hstack(tm_sf2[idx1][existingpostsyls]),
-                        #             np.hstack(
-                        #                 test_tm_bsf[idx2, idx1][existingpostsyls]
-                        #             ),
-                        #         ]
-                        #     ),
-                        #     axis=None,
-                        # )
-                        # log.info(f"{res}\n")
-                        # log.info(h_chi2)
+                        log.info(f"{sylM_sf[idx1]})\n{sylM_bsf[idx2, idx1]}\n")
+                        res = stats.chi2_contingency(stacked.T)
+                        log.info(f"{res}\n")
                         if h_chi2 == 1:
                             test_sylM_bsf[idx2, idx1][existingpostsyls] = sylM_bsf[
                                 idx2, idx1

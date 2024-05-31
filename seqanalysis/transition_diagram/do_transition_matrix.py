@@ -300,11 +300,11 @@ def make_final_plots(cfg):
 def main(yaml_file, analyse_files):
     with open(yaml_file) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
-        f.close()
+
+        if not cfg["data"]["bouts"]:
+            cfg = get_data(cfg, analyse_files)
 
         log.info("No bouts found in yaml file")
-
-        cfg = get_data(cfg, analyse_files)
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)

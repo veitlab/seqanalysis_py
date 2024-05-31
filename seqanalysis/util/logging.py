@@ -10,8 +10,8 @@ def config_logging():
 
     stream_handler = RichHandler()
 
-    logger.setLevel(level="INFO")
-    stream_handler.setLevel(level="INFO")
+    logger.setLevel(level="DEBUG")
+    stream_handler.setLevel(level="DEBUG")
 
     fmt_shell = "%(message)s"
 
