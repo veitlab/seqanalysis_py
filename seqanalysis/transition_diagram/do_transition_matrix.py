@@ -142,6 +142,8 @@ def make_first_plots(cfg):
         )
         * 500
     )
+    embed()
+    exit()
     # get them into the right order
     # nice labels
     xlabels = []
@@ -251,7 +253,6 @@ def make_final_plots(cfg):
         np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
         * cfg["constants"]["node_size"]
     )
-    "Plot Transition Matrix and Transition Diagram"
 
     xlabels = []
     ylabels = []

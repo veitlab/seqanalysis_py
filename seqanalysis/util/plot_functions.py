@@ -2,8 +2,12 @@ import seaborn as sns
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from seqanalysis.util.logging import config_logging
+import plotly.graph_objects as go
 from IPython import embed
+
+log = config_logging()
+
 
 plt.rcParams["svg.fonttype"] = (
     "none"  # this is so that svg figures save text as text and not the single letters
@@ -38,6 +42,7 @@ def plot_transition_matrix(matrix, labelx, labely, save_path, title):
     sns.despine(top=False, right=False, left=False, bottom=False)
     ax.set_title(title)
     fig.tight_layout()
+    log.info(f"Saving plot to {save_path}")
     fig.savefig(save_path, dpi=300)
 
 
@@ -65,52 +70,94 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
 
     # Set the positions of nodes in a circular layout
     positions = nx.circular_layout(Graph)
+    # get the x and y coordinates of the nodes
 
-    # Create a subplot with a specified size and margins
-    fig, ax = plt.subplots(figsize=(21 / 2.54, 19 / 2.54))
-    fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
-
-    # Draw nodes with specified size, color, and transparency
-    nx.draw_networkx_nodes(
-        Graph,
-        pos=positions,
-        node_size=node_size,
-        node_color="tab:orange",
-        ax=ax,
-        alpha=0.9,
+    x_pos, y_pos = zip(*positions.values())
+    node_trace = go.Scatter(
+        x=x_pos,
+        y=y_pos,
+        mode="markers",
+        marker=dict(size=node_size, color="orange"),
+        text=labels,
+        hoverinfo="text",
     )
-
-    # Draw node labels
-    nx.draw_networkx_labels(Graph, pos=positions, labels=node_labels)
-
-    # Draw edges with specified width, arrows, and style
-    edge_width = [x / edge_width for x in [*edge_labels.values()]]
-    nx.draw_networkx_edges(
-        Graph,
-        pos=positions,
-        node_size=node_size,
-        width=edge_width,
-        arrows=True,
-        arrowsize=20,
-        min_target_margin=25,
-        min_source_margin=10,
-        connectionstyle="arc3,rad=0.2",
-        ax=ax,
+    edge_trace = go.Scatter(
+        x=x_pos,
+        y=y_pos,
+        line=dict(width=edge_width, color="black"),
+        hoverinfo="none",
+        mode="lines",
     )
-
-    # Draw edge labels at the midpoint of the edges
-    nx.draw_networkx_edge_labels(
-        Graph, positions, label_pos=0.5, edge_labels=edge_labels, ax=ax, rotate=False
+    fig = go.Figure(
+        data=[edge_trace, node_trace],
+        layout=go.Layout(
+            title="<br>Network graph made with Python",
+            titlefont_size=16,
+            showlegend=False,
+            hovermode="closest",
+            margin=dict(b=20, l=5, r=5, t=40),
+            annotations=[
+                dict(
+                    text="Transition Diagram",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.005,
+                    y=-0.002,
+                )
+            ],
+            # xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            # yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        ),
     )
+    fig.show()
 
-    # Remove spines for a cleaner appearance
-    ax.spines["top"].set_visible(False)
-    ax.spines["bottom"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_visible(False)
-
-    # Set the title of the plot
-    plt.title(title)
-
-    # Save the plot to the specified file path with a specified DPI
-    fig.savefig(save_path, dpi=300)
+    # # Create a subplot with a specified size and margins
+    # fig, ax = plt.subplots(figsize=(21 / 2.54, 19 / 2.54))
+    # fig.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95)
+    #
+    # # Draw nodes with specified size, color, and transparency
+    # nx.draw_networkx_nodes(
+    #     Graph,
+    #     pos=positions,
+    #     node_size=node_size,
+    #     node_color="tab:orange",
+    #     ax=ax,
+    #     alpha=0.9,
+    # )
+    #
+    # # Draw node labels
+    # nx.draw_networkx_labels(Graph, pos=positions, labels=node_labels)
+    #
+    # # Draw edges with specified width, arrows, and style
+    # edge_width = [x / edge_width for x in [*edge_labels.values()]]
+    # nx.draw_networkx_edges(
+    #     Graph,
+    #     pos=positions,
+    #     node_size=node_size,
+    #     width=edge_width,
+    #     arrows=True,
+    #     arrowsize=20,
+    #     min_target_margin=25,
+    #     min_source_margin=10,
+    #     connectionstyle="arc3,rad=0.2",
+    #     ax=ax,
+    # )
+    #
+    # # Draw edge labels at the midpoint of the edges
+    # nx.draw_networkx_edge_labels(
+    #     Graph, positions, label_pos=0.5, edge_labels=edge_labels, ax=ax, rotate=False
+    # )
+    #
+    # # Remove spines for a cleaner appearance
+    # ax.spines["top"].set_visible(False)
+    # ax.spines["bottom"].set_visible(False)
+    # ax.spines["right"].set_visible(False)
+    # ax.spines["left"].set_visible(False)
+    #
+    # # Set the title of the plot
+    # plt.title(title)
+    #
+    # # Save the plot to the specified file path with a specified DPI
+    # log.info(f"Saving plot to {save_path}")
+    # fig.savefig(save_path, dpi=300)
