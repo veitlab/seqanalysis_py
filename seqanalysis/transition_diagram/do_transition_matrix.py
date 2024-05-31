@@ -142,8 +142,6 @@ def make_first_plots(cfg):
         )
         * 500
     )
-    embed()
-    exit()
     # get them into the right order
     # nice labels
     xlabels = []

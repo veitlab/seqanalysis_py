@@ -21,6 +21,8 @@ polars = "^0.20.25"
 evfuncs = "^0.3.5.post1"
 plotly = "^5.22.0"
 nbformat = "^5.10.4"
+dash = "^2.17.0"
+dash-cytoscape = "^1.0.1"
 
 
 [build-system]
