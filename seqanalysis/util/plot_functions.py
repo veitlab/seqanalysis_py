@@ -1,12 +1,8 @@
 import seaborn as sns
-import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 from seqanalysis.util.logging import config_logging
-import plotly.graph_objects as go
 from IPython import embed
-from dash import Dash, dcc, html
-import dash_cytoscape as cyto
 
 log = config_logging()
 

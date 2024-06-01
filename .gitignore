@@ -7,3 +7,4 @@ env
 !gr88gr06.yaml
 venv
 .idea
+.python-version
