@@ -61,6 +61,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     """
 
     # Create a directed graph from the given matrix
+
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
     # Map node labels to corresponding nodes
@@ -79,23 +80,29 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         {
             "data": {"id": str(node), "label": label},
             "position": {"x": pos[0], "y": pos[1]},
+            "classes": str(node),
         }
         for node, label, pos in zip(Graph.nodes, labels, positions.values())
     ]
+
     edges = [
         {"data": {"source": str(source), "target": str(target), "weight": weight}}
         for source, target, weight in Graph.edges(data="weight")
     ]
     elements = nodes + edges
-    styles = {
-        "output": {
-            "overflow-y": "scroll",
-            "overflow-wrap": "break-word",
-            "height": "calc(100% - 25px)",
-            "border": "thin lightgrey solid",
-        },
-        "tab": {"height": "calc(98vh - 115px)"},
-    }
+
+    node_sizes = [
+        {
+            "selector": "." + str(node),
+            "style": {
+                "shape": "circle",
+                "label": "data(label)",
+                "width": w * 100,
+                "height": h * 100,
+            },
+        }
+        for node, w, h in zip(Graph.nodes, node_size, node_size)
+    ]
     app = Dash()
     app.layout = (
         html.Div(
@@ -124,6 +131,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                         "label": "data(label)",
                                     },
                                 },
+                                *node_sizes,
                             ],
                         )
                     ],

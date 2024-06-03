@@ -142,6 +142,10 @@ def make_first_plots(cfg):
         )
         * 500
     )
+    node_size = np.round(
+        np.sum(tmd_no_shift, axis=1) / np.max(np.sum(tmd_no_shift, axis=1)), 2
+    )
+
     # get them into the right order
     # nice labels
     xlabels = []
@@ -303,8 +307,8 @@ def main(yaml_file, analyse_files):
         f.close()
 
         log.info("No bouts found in yaml file")
-
-        cfg = get_data(cfg, analyse_files)
+        if not cfg["data"]["bouts"]:
+            cfg = get_data(cfg, analyse_files)
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)
