@@ -61,6 +61,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
     """
 
     # Create a directed graph from the given matrix
+    embed()
 
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
@@ -122,6 +123,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                         "curve-style": "bezier",
                                         "label": "data(weight)",
                                         "target-arrow-shape": "triangle",
+                                        "z-index": "10",
                                     },
                                 },
                                 {
@@ -129,6 +131,18 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                     "style": {
                                         "shape": "circle",
                                         "label": "data(label)",
+                                        "z-index": "1",
+                                        "text-halign": "right",
+                                    },
+                                },
+                                {
+                                    "selector": "*",
+                                    "style": {
+                                        "target-distance-from-node": "10px",
+                                        "source-distance-from-node": "10px",
+                                        "z-index-compare": "manual",
+                                        "source-endpoint": "outside-to-line",
+                                        "target-endpoint": "outside-to-line",
                                     },
                                 },
                                 *node_sizes,
