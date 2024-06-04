@@ -164,12 +164,12 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                         "target-arrow-shape": "triangle",
                                         "z-index": "1",
                                         "width": "data(weight)",
+                                        "source-text-offset": 10,
                                     },
                                 },
                                 {
                                     "selector": ":loop",
                                     "style": {
-                                        # "curve-style": "unbundled-bezier",
                                         "control-point-step-size": 70,
                                     },
                                 },
@@ -178,7 +178,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                     ],
                 ),
                 html.Div("Download graph:"),
-                html.Button("Save as SVG", id="btn-get-svg"),
+                html.Button("Save as PNG", id="btn-get-svg"),
             ],
         ),
     )
@@ -187,7 +187,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         Output("cytoscape", "generateImage"),
         Input("btn-get-svg", "n_clicks"),
     )
-    def save_svg(n_clicks):
-        return {"type": "svg", "action": "download"}
+    def save_svg(btn):
+        return {"type": "png", "action": "download"}
 
     app.run_server(debug=True, use_reloader=False)
