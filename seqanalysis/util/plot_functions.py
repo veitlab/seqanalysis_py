@@ -79,37 +79,55 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
 
     nodes = [
         {
+            "data": {
+                "id": str(node),
+                "label": label,
+                "weight": w * 100,
+                "height": w * 100,
+            },
+            "position": {"x": pos[0], "y": pos[1]},
+            "classes": "bignode",
+        }
+        if w > 0.7
+        else {
             "data": {"id": str(node), "label": label},
             "position": {"x": pos[0], "y": pos[1]},
             "classes": str(node),
         }
-        for node, label, pos in zip(Graph.nodes, labels, positions.values())
+        for node, label, pos, w in zip(
+            Graph.nodes, labels, positions.values(), node_size
+        )
     ]
 
     edges = [
-        {"data": {"source": str(source), "target": str(target), "weight": weight}}
+        {
+            "data": {
+                "source": str(source),
+                "target": str(target),
+                "weight": weight / 10,
+                "label": str(weight),
+            }
+        }
         for source, target, weight in Graph.edges(data="weight")
     ]
     elements = nodes + edges
 
-    node_sizes = [
-        {
-            "selector": "." + str(node),
-            "style": {
-                "shape": "circle",
-                "label": "data(label)",
-                "width": w * 100,
-                "height": h * 100,
-            },
-        }
-        for node, w, h in zip(Graph.nodes, node_size, node_size)
-    ]
+    # node_sizes = [
+    #     {
+    #         "selector": "." + str(node),
+    #         "style": {
+    #             "width": w * 100,
+    #             "height": h * 100,
+    #         },
+    #     }
+    #     for node, w, h in zip(*nodes, node_size, node_size)
+    # ]
     app = Dash()
     app.layout = (
         html.Div(
             [
                 html.Div(
-                    className="eight columns",
+                    className="TransitionDiagram",
                     children=[
                         cyto.Cytoscape(
                             id="cytoscape",
@@ -117,22 +135,16 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                             style={"width": "calc(100%-500px)", "height": "95vh"},
                             elements=elements,
                             stylesheet=[
-                                {
-                                    "selector": "edges",
-                                    "style": {
-                                        "curve-style": "bezier",
-                                        "label": "data(weight)",
-                                        "target-arrow-shape": "triangle",
-                                        "z-index": "10",
-                                    },
-                                },
+                                # *node_sizes,
                                 {
                                     "selector": "nodes",
                                     "style": {
-                                        "shape": "circle",
                                         "label": "data(label)",
-                                        "z-index": "1",
+                                        "shape": "circle",
+                                        "z-index": "10",
                                         "text-halign": "right",
+                                        "width": "data(weight)",
+                                        "height": "data(weight)",
                                     },
                                 },
                                 {
@@ -141,11 +153,26 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                         "target-distance-from-node": "10px",
                                         "source-distance-from-node": "10px",
                                         "z-index-compare": "manual",
-                                        "source-endpoint": "outside-to-line",
-                                        "target-endpoint": "outside-to-line",
+                                        "text-margin-y": "-10px",
                                     },
                                 },
-                                *node_sizes,
+                                {
+                                    "selector": "edges",
+                                    "style": {
+                                        "curve-style": "bezier",
+                                        "label": "data(label)",
+                                        "target-arrow-shape": "triangle",
+                                        "z-index": "1",
+                                        "width": "data(weight)",
+                                    },
+                                },
+                                {
+                                    "selector": ":loop",
+                                    "style": {
+                                        # "curve-style": "unbundled-bezier",
+                                        "control-point-step-size": 70,
+                                    },
+                                },
                             ],
                         )
                     ],
@@ -161,7 +188,6 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         Input("btn-get-svg", "n_clicks"),
     )
     def save_svg(n_clicks):
-        if ctx.triggered:
-            return {"type": "svg", "action": "download"}
+        return {"type": "svg", "action": "download"}
 
     app.run_server(debug=True, use_reloader=False)
