@@ -1,5 +1,7 @@
+import pathlib
+
 import seaborn as sns
-import pandas as pd
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from seqanalysis.util.logging import config_logging
@@ -49,30 +51,30 @@ def plot_transition_matrix(matrix, labelx, labely, save_path, title):
     fig.savefig(save_path, dpi=300)
 
 
-def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
+def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     """
     Plot a transition diagram based on the given matrix and labels.
 
-    Parameters:
-    - matrix (array-like): The transition matrix to be visualized.
-    - labels (list): Labels for the nodes in the diagram.
-    - node_size (float): Size of the nodes in the diagram.
-    - edge_width (float): Width scaling factor for the edges in the diagram.
-    - save_path (str): File path to save the generated plot.
-    - title (str): Title of the plot.
     """
 
     # Create a directed graph from the given matrix
     embed()
+    title = cfg["title_figures"]
     fig = px.imshow(
         matrix,
-        color_continuous_scale="Magma",
+        color_continuous_scale="Greys",
     )
     fig.update_traces(text=matrix_labels, texttemplate="%{text}")
+    fig.update_yaxes(visible=False, showticklabels=False)
+    fig.update_xaxes(visible=False, showticklabels=False)
     fig.update_xaxes(side="top")
 
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
+    data_root = pathlib.Path(cfg["paths"]["folder_path"])
+    batch_files = list(data_root.glob("**/batch*"))
+    batch_files = [file.name for file in batch_files]
+    batch_files = np.unique(batch_files)
     # Set the positions of nodes in a circular layout
     positions = nx.circular_layout(Graph)
     # mulitply by 10 to make the plot bigger
@@ -87,12 +89,6 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
                 "weight": w * 100,
                 "height": w * 100,
             },
-            "position": {"x": pos[0], "y": pos[1]},
-            "classes": "bignode",
-        }
-        if w > 0.7
-        else {
-            "data": {"id": str(node), "label": label},
             "position": {"x": pos[0], "y": pos[1]},
             "classes": str(node),
         }
@@ -114,20 +110,22 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
     ]
     elements = nodes + edges
 
-    # node_sizes = [
-    #     {
-    #         "selector": "." + str(node),
-    #         "style": {
-    #             "width": w * 100,
-    #             "height": h * 100,
-    #         },
-    #     }
-    #     for node, w, h in zip(*nodes, node_size, node_size)
-    # ]
     app = Dash()
     app.layout = (
         html.Div(
             [
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id="dropdown-batch-files",
+                            value="grid",
+                            clearable=False,
+                            options=[
+                                {"label": name, "value": name} for name in batch_files
+                            ],
+                        ),
+                    ]
+                ),
                 html.Div(
                     className="TransitionDiagram",
                     children=[
@@ -136,8 +134,9 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
                             layout={"name": "circle"},
                             style={
                                 "width": "49%",
-                                "height": "90vh",
+                                "height": "85vh",
                                 "display": "inline-block",
+                                "background-color": "white",
                             },
                             elements=elements,
                             stylesheet=[
@@ -156,10 +155,12 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
                                 {
                                     "selector": "*",
                                     "style": {
-                                        "target-distance-from-node": "10px",
-                                        "source-distance-from-node": "10px",
+                                        "target-distance-from-node": "15px",
+                                        "source-distance-from-node": "15px",
                                         "z-index-compare": "manual",
                                         "text-margin-y": "-10px",
+                                        "font-size": "20px",
+                                        "text-background-padding": "3px",
                                     },
                                 },
                                 {
@@ -170,7 +171,8 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
                                         "target-arrow-shape": "triangle",
                                         "z-index": "1",
                                         "width": "data(weight)",
-                                        "source-text-offset": 10,
+                                        "text-rotation": "autorotate",
+                                        # "source-text-offset": 10,
                                     },
                                 },
                                 {
@@ -185,7 +187,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
                             figure=fig,
                             style={
                                 "width": "50%",
-                                "height": "90vh",
+                                "height": "85vh",
                                 "display": "inline-block",
                             },
                         ),
@@ -209,11 +211,20 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
         Output("cytoscape", "generateImage"),
         Input("btn-get-svg", "n_clicks"),
     )
-    def save_svg(btn):
+    def save_svg(btn, title=title):
         if btn is None:
             raise PreventUpdate
         else:
-            return {"type": "png", "action": "download"}
+            return {
+                "type": "png",
+                "action": "download",
+                "options": {
+                    "bg": "white",
+                    "maxHeight": 4320,
+                    "maxWidth": 7680,
+                },
+                "filename": f"{title}_simple",
+            }
 
     @callback(
         Output("cytoscape", "elements"),
@@ -229,13 +240,13 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
 
         return elements
 
-    # @callback(
-    #     Output("cytoscape-tapNodeData-output", "children"),
-    #     Input("cytoscape", "tapNodeData"),
-    # )
-    # def displayTapNodeData(data):
-    #     if data:
-    #         return f"You clicked on node {data['label']}"
+    @callback(
+        Output("cytoscape", "elements"),
+        Input("dropdown-batch-files", "value"),
+        State("cytoscape", "elements"),
+    )
+    def update_elements(value, cfg):
+        pass
 
     app.run_server(debug=True, use_reloader=False)
 

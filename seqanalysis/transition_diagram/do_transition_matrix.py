@@ -159,6 +159,7 @@ def make_first_plots(cfg):
         ylabels,
         node_size,
         label_matrix_no_shift,
+        cfg,
     )
 
     pf.plot_transition_matrix(
