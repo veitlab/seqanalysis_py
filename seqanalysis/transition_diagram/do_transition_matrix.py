@@ -158,9 +158,7 @@ def make_first_plots(cfg):
         tmpd_no_shift,
         ylabels,
         node_size,
-        cfg["constants"]["edge_width"],
-        cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph_simple.pdf",
-        cfg["title_figures"] + " simple",
+        label_matrix_no_shift,
     )
 
     pf.plot_transition_matrix(

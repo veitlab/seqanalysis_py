@@ -4,7 +4,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from seqanalysis.util.logging import config_logging
 from IPython import embed
-from dash import Dash, dcc, html, callback, Output, Input, ctx
+import plotly.express as px
+from dash import Dash, dcc, html, callback, Output, Input, ctx, State
+from dash.exceptions import PreventUpdate
 import dash_cytoscape as cyto
 
 log = config_logging()
@@ -47,7 +49,7 @@ def plot_transition_matrix(matrix, labelx, labely, save_path, title):
     fig.savefig(save_path, dpi=300)
 
 
-def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, title):
+def plot_transition_diagram(matrix, labels, node_size, matrix_labels):
     """
     Plot a transition diagram based on the given matrix and labels.
 
@@ -62,14 +64,14 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
 
     # Create a directed graph from the given matrix
     embed()
+    fig = px.imshow(
+        matrix,
+        color_continuous_scale="Magma",
+    )
+    fig.update_traces(text=matrix_labels, texttemplate="%{text}")
+    fig.update_xaxes(side="top")
 
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
-
-    # Map node labels to corresponding nodes
-    node_labels = dict(zip(Graph, labels))
-
-    # Get edge labels from the graph
-    edge_labels = nx.get_edge_attributes(Graph, "weight")
 
     # Set the positions of nodes in a circular layout
     positions = nx.circular_layout(Graph)
@@ -132,7 +134,11 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                         cyto.Cytoscape(
                             id="cytoscape",
                             layout={"name": "circle"},
-                            style={"width": "calc(100%-500px)", "height": "95vh"},
+                            style={
+                                "width": "49%",
+                                "height": "90vh",
+                                "display": "inline-block",
+                            },
                             elements=elements,
                             stylesheet=[
                                 # *node_sizes,
@@ -174,11 +180,27 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
                                     },
                                 },
                             ],
-                        )
+                        ),
+                        dcc.Graph(
+                            figure=fig,
+                            style={
+                                "width": "50%",
+                                "height": "90vh",
+                                "display": "inline-block",
+                            },
+                        ),
                     ],
                 ),
-                html.Div("Download graph:"),
-                html.Button("Save as PNG", id="btn-get-svg"),
+                html.Div(
+                    [
+                        html.P(id="cytoscape-tapNodeData-output"),
+                        html.Div("Download graph:"),
+                        html.Button("Save as PNG", id="btn-get-svg"),
+                        html.Button(
+                            "Remove Node", id="btn-remove-node", n_clicks_timestamp=0
+                        ),
+                    ],
+                ),
             ],
         ),
     )
@@ -188,6 +210,33 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         Input("btn-get-svg", "n_clicks"),
     )
     def save_svg(btn):
-        return {"type": "png", "action": "download"}
+        if btn is None:
+            raise PreventUpdate
+        else:
+            return {"type": "png", "action": "download"}
+
+    @callback(
+        Output("cytoscape", "elements"),
+        Input("cytoscape", "tapNodeData"),
+        Input("btn-remove-node", "n_clicks"),
+        State("cytoscape", "elements"),
+    )
+    def remove_node(data, n, elements):
+        if n is None:
+            raise PreventUpdate
+        else:
+            elements = [elem for elem in elements if elem["data"]["id"] != data["id"]]
+
+        return elements
+
+    # @callback(
+    #     Output("cytoscape-tapNodeData-output", "children"),
+    #     Input("cytoscape", "tapNodeData"),
+    # )
+    # def displayTapNodeData(data):
+    #     if data:
+    #         return f"You clicked on node {data['label']}"
 
     app.run_server(debug=True, use_reloader=False)
+
+    exit()
