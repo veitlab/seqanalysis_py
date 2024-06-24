@@ -1,7 +1,10 @@
 # !!! don't overwrite this skript!!!
+
 # make a copy and change the copy! 
 # Bird_id: bird_id of the bird, is used to get all the notmat files 
 # with the bird id in the folder path
+
+# you don't need the data, the script can access the data in the data path, if you have the data:
 bird_id: ye04gr05
 
 # edge_threshold: edges under the threshold won't be shown
