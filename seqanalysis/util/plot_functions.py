@@ -58,13 +58,17 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     """
 
     # Create a directed graph from the given matrix
-    embed()
+    max_len_label = (max([len(label) for label in labels]) * 2) + 2
     title = cfg["title_figures"]
+    label_matrix = np.zeros_like(matrix, dtype="U" + str(max_len_label))
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            label_matrix[i, j] = f"{labels[i]}_{labels[j]}"
     fig = px.imshow(
         matrix,
         color_continuous_scale="Greys",
     )
-    fig.update_traces(text=matrix_labels, texttemplate="%{text}")
+    fig.update_traces(text=label_matrix, texttemplate="%{text}")
     fig.update_yaxes(visible=False, showticklabels=False)
     fig.update_xaxes(visible=False, showticklabels=False)
     fig.update_xaxes(side="top")
@@ -240,13 +244,13 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
 
         return elements
 
-    @callback(
-        Output("cytoscape", "elements"),
-        Input("dropdown-batch-files", "value"),
-        State("cytoscape", "elements"),
-    )
-    def update_elements(value, cfg):
-        pass
+    # @callback(
+    #     Output("cytoscape", "elements"),
+    #     Input("dropdown-batch-files", "value"),
+    #     State("cytoscape", "elements"),
+    # )
+    # def update_elements(value, cfg):
+    #     pass
 
     app.run_server(debug=True, use_reloader=False)
 
