@@ -57,6 +57,6 @@ labels:
   - e
 nonchunk_plot: false
 paths:
-  folder_path: /home/acfw/Projects/data/gr88gr06_tweetynet/training_data/
+  folder_path: /home/alexander/projects/data/gr88gr06_tweetynet/training_data/
   save_path: ../transition_diagram_output/gr88gr06/
 title_figures: gr88gr06_first_screening
