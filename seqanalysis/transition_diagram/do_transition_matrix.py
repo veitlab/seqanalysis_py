@@ -250,9 +250,13 @@ def make_final_plots(cfg):
     tmpd_no_shift = hf.get_node_matrix(
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
     )
-    node_size = (
-        np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
-        * cfg["constants"]["node_size"]
+    # node_size = (
+    #     np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
+    #     * cfg["constants"]["node_size"]
+    # )
+
+    node_size = np.round(
+        np.sum(tmd_no_shift, axis=1) / np.max(np.sum(tmd_no_shift, axis=1)), 2
     )
 
     xlabels = []
@@ -278,9 +282,8 @@ def make_final_plots(cfg):
         tmpd_no_shift,
         ylabels,
         node_size,
-        cfg["constants"]["edge_width"],
-        cfg["paths"]["save_path"] + cfg["title_figures"] + "_graph.pdf",
-        cfg["title_figures"],
+        label_matrix_no_shift,
+        cfg,
     )
 
     pf.plot_transition_matrix(
