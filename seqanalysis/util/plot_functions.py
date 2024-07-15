@@ -58,7 +58,6 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     """
 
     # Create a directed graph from the given matrix
-    embed()
     max_len_label = (max([len(label) for label in labels]) * 2) + 2
     title = cfg["title_figures"]
     label_matrix = np.zeros_like(matrix, dtype="U" + str(max_len_label))
@@ -72,6 +71,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
         color_continuous_scale="Greys",
     )
     fig.update_traces(text=matrix, texttemplate="%{text}")
+    fig.update_layout(font=dict(size=18))
     # fig.update_yaxes(visible=False, showticklabels=False)
     # fig.update_xaxes(visible=False, showticklabels=False)
     fig.update_xaxes(side="top")
@@ -147,7 +147,6 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
                             },
                             elements=elements,
                             stylesheet=[
-                                # *node_sizes,
                                 {
                                     "selector": "nodes",
                                     "style": {
