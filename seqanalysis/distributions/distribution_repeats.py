@@ -1,10 +1,7 @@
 import re
-import sys
 import glob
-import yaml
 import pathlib
 import numpy as np
-import seqanalysis.util.plot_functions as pf
 import seqanalysis.util.helper_functions as hf
 import matplotlib.pyplot as plt
 from IPython import embed
@@ -36,20 +33,21 @@ def get_catch_data(path, intro_notes, bout_chunk):
     return bouts
 
 
-def main(folder_path, syl, labels, bout_chunk):
+def main(folder_path, syl, labels, bout_chunk, intro_recplacement):
     folder_path = pathlib.Path(folder_path)
     files = list(folder_path.glob("**/[!syll*][!check]*.not.mat"))
 
     seqs = hf.get_labels(
         files,
         [
-            "_",
+            "x",
             "j",
             "a",
             "d",
             "c",
             "e",
         ],
+        intro_recplacement,
     )
     bouts, _ = hf.get_bouts(seqs, bout_chunk)
 
@@ -95,9 +93,10 @@ if __name__ == "__main__":
     # OUTPUT:
     # figures
     syllable = "l+"
-    path = "/home/acfw/Projects/data/gr88gr06_tweetynet/training_data"
+    path = "/home/alexander/projects/data/gr88gr06/training/"
     labels = [f"{syllable}"]
     bout_chunk = "ll"
+    intro_recplacement = "x"
 
     plt.rcParams["svg.fonttype"] = (
         "none"  # this is so that svg figures save text as text and not the single letters
@@ -105,4 +104,4 @@ if __name__ == "__main__":
     plt.rcParams["font.size"] = 20
     plt.rcParams["axes.linewidth"] = 2
 
-    main(path, syllable, labels, bout_chunk)
+    main(path, syllable, labels, bout_chunk, intro_recplacement)
