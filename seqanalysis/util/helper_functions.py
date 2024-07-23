@@ -11,10 +11,30 @@ from seqanalysis.util.logging import config_logging
 log = config_logging()
 
 
-def get_data(path, intro_notes, bout_chunk):
+def get_catch_data(path, intro_notes, bout_chunk, intro_replacement):
+    list = glob.glob(path)
+
+    file_list = []
+    for i in range(len(list)):
+        with open(list[i], "r") as file:
+            line_list = file.readlines()
+            file_list.extend(
+                [
+                    list[i].rstrip("batch.notcatch") + item.rstrip() + ".not.mat"
+                    for item in line_list
+                ]
+            )
+
+    seqs = get_labels(file_list, intro_notes, intro_replacement)
+    bouts, _ = get_bouts(seqs, bout_chunk)
+
+    return bouts
+
+
+def get_data(path, intro_notes, bout_chunk, intro_replacement):
     file_list = glob.glob(path)
 
-    seqs = get_labels(file_list, intro_notes)
+    seqs = get_labels(file_list, intro_notes, intro_replacement)
     bouts, _ = get_bouts(seqs, bout_chunk)
 
     return bouts
