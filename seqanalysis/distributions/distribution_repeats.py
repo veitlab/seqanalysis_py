@@ -45,8 +45,8 @@ def mult_days(
     days = sorted(days)
     days.append(path_non_training)
     fig1, ax1 = plt.subplots(1, 1, figsize=(8, 5), sharex=True)
-    color_training_days = ["#220901", "#621708", "#941b0c", "#bc3908", "#f6aa1c"]
     # color_training_days = ["#0b132b", "#1c2541", "#3a506b", "#5bc0be", "#6fffe9"]
+    color_training_days = ["#66023C", "#219ebc", "#023047", "#ffb703", "#b87333"]
     for i, day in enumerate(days):
         files = list(day.glob("**/[!syll*][!check]*.not.mat"))
         intro_notes = [
@@ -101,7 +101,7 @@ def mult_days(
     ax1.tick_params(axis="both", which="major", labelsize=20)
     # ax1.plot(bins[1:-1], counts[1:]/np.sum(counts[1:]), label=day, linewidth=4)
 
-    plt.legend(fontsize=20)
+    plt.legend(fontsize=20, title="Training days")
     fig1.savefig(
         f"/home/alexander/projects/masterthesis/figures/results/{syl}_repeats_days.pdf"
     )
