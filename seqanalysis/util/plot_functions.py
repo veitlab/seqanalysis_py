@@ -166,7 +166,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
                                         "z-index-compare": "manual",
                                         "text-margin-y": "-10px",
                                         "font-size": "20px",
-                                        "text-background-padding": "3px",
+                                        "text-background-padding": "7px",
                                     },
                                 },
                                 {
@@ -254,6 +254,6 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     # def update_elements(value, cfg):
     #     pass
 
-    app.run_server(debug=True, use_reloader=False)
+    app.run_server(debug=True, use_reloader=False, port=8050)
 
     exit()
