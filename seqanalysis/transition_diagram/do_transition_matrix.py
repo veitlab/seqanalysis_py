@@ -58,7 +58,7 @@ def get_data(cfg, analyse_files: str):
         seqs, cfg["labels"]["bout_chunk"]
     )
 
-    if cfg["labels"]["double_syl"] is None:
+    if cfg["labels"]["double_syl"][0] != "None":
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
         for i, (double_syll, renamed_double_syll) in enumerate(
@@ -71,6 +71,7 @@ def get_data(cfg, analyse_files: str):
                 cfg["data"]["bouts_rep"],
             )
     else:
+        log.info("No double syllables to replace")
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
     log.info("Replacing chunks")
@@ -83,7 +84,7 @@ def get_data(cfg, analyse_files: str):
 
 def make_first_plots(cfg):
     np.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize)
-    bouts = cfg["data"]["bouts_rep"]
+    bouts = cfg["data"]["bouts_bouts"]
     # unique_labels in bouts
     unique_labels = sorted(list(set(bouts)))
     log.info(f"Unique labels of Chunks from bouts_rep: {unique_labels}\n")
@@ -261,11 +262,15 @@ def make_final_plots(cfg):
 
     xlabels = []
     ylabels = []
+    renamedch = [ch[1] for ch in cfg["labels"]["chunks_renamed"]]
+    ch = [ch[0] for ch in cfg["labels"]["chunks_renamed"]]
+    double_syll = [ch for ch in cfg["labels"]["double_syl"]]
+    renamed_double_syll = [ch for ch in cfg["labels"]["double_syl_rep"]]
     for x, y in zip(label_matrix_shift[0, :], label_matrix_shift[:, 0]):
-        renamedch = [ch[1] for ch in cfg["labels"]["chunks_renamed"]]
-        ch = [ch[0] for ch in cfg["labels"]["chunks_renamed"]]
         if x[1] in renamedch:
             xlabels.append(ch[renamedch.index(x[1])])
+        elif x[1] in renamed_double_syll:
+            xlabels.append(double_syll[renamed_double_syll.index(x[1])])
         elif x[1] == "_":
             xlabels.append("End")
         else:
@@ -273,6 +278,8 @@ def make_final_plots(cfg):
 
         if y[0] in renamedch:
             ylabels.append(ch[renamedch.index(y[0])])
+        elif y[0] in renamed_double_syll:
+            ylabels.append(double_syll[renamed_double_syll.index(y[0])])
         elif y[0] == "_":
             ylabels.append("Start")
         else:
@@ -309,8 +316,8 @@ def main(yaml_file, analyse_files):
         f.close()
 
         log.info("No bouts found in yaml file")
-        if not cfg["data"]["bouts"]:
-            cfg = get_data(cfg, analyse_files)
+        # if not cfg["data"]["bouts"]:
+        cfg = get_data(cfg, analyse_files)
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)
