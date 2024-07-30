@@ -57,12 +57,6 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
 
     """
 
-    # Create a directed graph from the given matrix
-    # save to numpy array
-    np.save("/home/alexander/projects/presentation/matrix_training.npy", matrix)
-    np.save("/home/alexander/projects/presentation/labels_training.npy", labels)
-    np.save("/home/alexander/projects/presentation/node_size_training.npy", node_size)
-
     max_len_label = (max([len(label) for label in labels]) * 2) + 2
     title = cfg["title_figures"]
     label_matrix = np.zeros_like(matrix, dtype="U" + str(max_len_label))
