@@ -10,6 +10,9 @@ import plotly.express as px
 from dash import Dash, dcc, html, callback, Output, Input, ctx, State
 from dash.exceptions import PreventUpdate
 import dash_cytoscape as cyto
+import plotly.io as pio
+
+pio.kaleido.scope.default_format = "svg"
 
 log = config_logging()
 
@@ -74,6 +77,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     # fig.update_yaxes(visible=False, showticklabels=False)
     # fig.update_xaxes(visible=False, showticklabels=False)
     fig.update_xaxes(side="top")
+    fig.write_image(f"transition_matrix_{title}_simple.svg")
     Graph = nx.from_numpy_array(matrix, create_using=nx.DiGraph)
 
     data_root = pathlib.Path(cfg["paths"]["folder_path"])
