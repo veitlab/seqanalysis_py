@@ -59,7 +59,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
     Plot a transition diagram based on the given matrix and labels.
 
     """
-
+    cyto.load_extra_layouts()
     max_len_label = (max([len(label) for label in labels]) * 2) + 2
     title = cfg["title_figures"]
     label_matrix = np.zeros_like(matrix, dtype="U" + str(max_len_label))
@@ -207,7 +207,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
                     [
                         html.P(id="cytoscape-tapNodeData-output"),
                         html.Div("Download graph:"),
-                        html.Button("Save as PNG", id="btn-get-svg"),
+                        html.Button("Save as SVG", id="btn-get-svg"),
                         html.Button(
                             "Remove Node", id="btn-remove-node", n_clicks_timestamp=0
                         ),
@@ -226,7 +226,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
             raise PreventUpdate
         else:
             return {
-                "type": "png",
+                "type": "svg",
                 "action": "download",
                 "options": {
                     "bg": "white",
@@ -243,9 +243,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
         State("cytoscape", "elements"),
     )
     def remove_node(data, n, elements):
-        if n is None:
-            raise PreventUpdate
-        else:
+        if data is not None and n > 0:
             elements = [elem for elem in elements if elem["data"]["id"] != data["id"]]
 
         return elements
