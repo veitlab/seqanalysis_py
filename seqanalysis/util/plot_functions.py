@@ -243,8 +243,18 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
         State("cytoscape", "elements"),
     )
     def remove_node(data, n, elements):
-        if data is not None and n > 0:
-            elements = [elem for elem in elements if elem["data"]["id"] != data["id"]]
+        if n is None:
+            raise PreventUpdate
+        if data is not None:
+            if ctx.triggered_id == "btn-remove-node" and n > 0:
+                log.info(f"n: {n}")
+                elements = [
+                    elem for elem in elements if elem["data"]["id"] != data["id"]
+                ]
+            else:
+                raise PreventUpdate
+        else:
+            raise PreventUpdate
 
         return elements
 
