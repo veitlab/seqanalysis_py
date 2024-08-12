@@ -71,6 +71,8 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
         x=labels,
         y=labels,
         color_continuous_scale="Greys",
+        zmin=0,
+        zmax=100,
     )
     fig.update_traces(text=matrix, texttemplate="%{text}")
     fig.update_layout(font=dict(size=18))
