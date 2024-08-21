@@ -106,7 +106,7 @@ def replace_intro_notes(s, intro_notes, replacement):
     return s
 
 
-def replace_chunks(s, chunks):
+def replace_chunks(s, chunks, split_repeats=True):
     """
     Replaces chunks in a sequence.
 
@@ -118,11 +118,55 @@ def replace_chunks(s, chunks):
     - s (str): Sequence with replaced chunks.
     """
     asci_letters = list(string.ascii_uppercase)
+    syllables_before_repeat = "m"
+    repeat_syllable = "l"
+    len_largest_repeat = 0
     ch = []
+
+    if split_repeats:
+        splitted_s = s.split("_")
+        # find the repeat syllable
+        repeat_syl_index = [
+            [
+                np.arange(m.start(0), m.end(0))
+                for m in re.finditer(syllables_before_repeat + repeat_syllable + "+", x)
+            ]
+            for x in splitted_s
+        ]
+
+        for i, repeat in enumerate(repeat_syl_index):
+            if not repeat:
+                log.debug(f"No repeat syllable found in chunk: {splitted_s[i]}")
+                continue
+            for j, repeat_index in enumerate(repeat):
+                if (
+                    len(repeat_index) - len(syllables_before_repeat)
+                    > len_largest_repeat
+                ):
+                    log.debug(
+                        f"New largest repeat syllable found in chunk: {splitted_s[i]}, {len(repeat_index) - len(syllables_before_repeat)}"
+                    )
+                    len_largest_repeat = len(repeat_index) - len(
+                        syllables_before_repeat
+                    )
+                log.debug(f"Repeat syllable found in chunk: {splitted_s[i]}")
+                for k, index in enumerate(repeat_index[1:]):
+                    log.debug(f"Replacing repeat syllable: {splitted_s[i][index]}")
+                    temp_s = list(splitted_s[i])
+                    temp_s[index] = asci_letters[k]
+                    splitted_s[i] = "".join(temp_s)
+            s = "_".join(splitted_s)
+        for i in range(len_largest_repeat):
+            ch.append((f"l_{i}", asci_letters[i]))
+
+        asci_letters = asci_letters[len_largest_repeat:]
+
+    # BUG: if asci_letters is empty, the function will fail
     for i, chunk in enumerate(chunks):
         log.info(f"Replacing chunk: {chunk}, with {asci_letters[i]}")
         ch.append((chunk, asci_letters[i]))
         s = re.sub(chunk, asci_letters[i], s)
+        asci_letters.remove(asci_letters[i])
     return s, ch
 
 

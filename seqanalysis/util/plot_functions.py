@@ -75,7 +75,7 @@ def plot_transition_diagram(matrix, labels, node_size, matrix_labels, cfg):
         zmax=100,
     )
     fig.update_traces(text=matrix, texttemplate="%{text}")
-    fig.update_layout(font=dict(size=18))
+    fig.update_layout(font=dict(size=8))
     # fig.update_yaxes(visible=False, showticklabels=False)
     # fig.update_xaxes(visible=False, showticklabels=False)
     fig.update_xaxes(side="top")
