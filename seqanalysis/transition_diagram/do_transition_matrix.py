@@ -300,7 +300,8 @@ def make_final_plots(cfg):
 def main(yaml_file, analyse_files):
     with open(yaml_file) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
-
+        embed()
+        quit()
         if not cfg["data"]["bouts"]:
             cfg = get_data(cfg, analyse_files)
 
@@ -331,7 +332,7 @@ if __name__ == "__main__":
     #
     # INPUT:
     # sys.argv[1] = yaml file of the bird, example: example_yaml.yaml
-    # sys.argv[2] = analysis catch or all files: input: catch, all
+    # sys.argv[2] = analysis catch or all files: input: catch, batch, notcatch
     #
     # OUTPUT:
     # figures

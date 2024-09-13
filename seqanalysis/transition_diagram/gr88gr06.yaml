@@ -59,6 +59,6 @@ labels:
   - x
 nonchunk_plot: true
 paths:
-  folder_path: /Volumes/alexander/data/gr88gr06/training/
-  save_path: ../transition_diagram_output/gr88gr06/
+  folder_path: D:/data/gr88gr06/training
+  save_path: C:/Users/User/Documents/Doktorarbeit/project1_HVC/gr88gr06/figures
 title_figures: gr88gr06_training
