@@ -29,7 +29,7 @@ def get_labels(mat_list, notes):
         mat = sio.loadmat(matidx)
 
         labels = mat['labels'][0]
-        labels = 'S' + labels + 'E'
+        labels = '_' + labels
 
         if len(notes) > 0:
             try:
