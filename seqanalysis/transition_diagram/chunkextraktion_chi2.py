@@ -6,8 +6,8 @@ import string
 import numpy as np
 import scipy.io as sio
 import scipy.stats as stats
-import seqanalysis.util.plot_functions as pf
-import seqanalysis.util.helper_functions as hf
+import seqanalysis.util.plot_transition_diagram_functions as pf
+import seqanalysis.util.calc_matrix_transition_diagram as hf
 from seqanalysis.util.logging import config_logging
 import matplotlib.pyplot as plt
 

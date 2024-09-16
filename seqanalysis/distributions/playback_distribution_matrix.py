@@ -3,16 +3,16 @@ import sys
 import glob
 import numpy as np
 import seaborn as sns
-import seqanalysis.util.helper_functions as hf
 import matplotlib.pyplot as plt
+from seqanalysis.util.get_data_transition_diagram import get_bouts, get_labels
 from IPython import embed
 
 
 def get_data(path, intro_notes, bout_chunk):
     file_list = glob.glob(path)
 
-    seqs = hf.get_labels(file_list, intro_notes)
-    bouts, _ = hf.get_bouts(seqs, bout_chunk)
+    seqs = get_labels(file_list, intro_notes)
+    bouts, _ = get_bouts(seqs, bout_chunk)
 
     return bouts
 
@@ -30,8 +30,8 @@ def get_catch_data(path, intro_notes, bout_chunk):
             )
     # embed()
     # quit()
-    seqs = hf.get_labels(file_list, intro_notes)
-    bouts, _ = hf.get_bouts(seqs, bout_chunk)
+    seqs = get_labels(file_list, intro_notes)
+    bouts, _ = get_bouts(seqs, bout_chunk)
 
     return bouts
 

@@ -7,8 +7,9 @@ import numpy as np
 import yaml
 from IPython import embed
 
-import seqanalysis.util.helper_functions as hf
-import seqanalysis.util.plot_functions as pf
+from seqanalysis.util.get_data_transition_diagram import get_labels, get_bouts, replace_chunks
+from seqanalysis.util.calc_matrix_transition_diagram import get_transition_matrix, get_node_matrix
+import seqanalysis.util.plot_transition_diagram_functions as pf
 from seqanalysis.util.logging import config_logging
 
 log = config_logging()
@@ -16,7 +17,7 @@ log = config_logging()
 
 def get_analyse_files_data(folder_path: pathlib.Path, analyse: str):
     file_list = []
-    analyse_files = list(folder_path.glob((f"**/*{analyse}")))
+    analyse_files = list(folder_path.glob(f"**/*{analyse}"))
     if not analyse_files:
         log.error(f"No catch files found in {folder_path}")
         FileNotFoundError(f"No catch files found in {folder_path}")
@@ -52,13 +53,13 @@ def get_data(cfg, analyse_files: str):
         raise FileNotFoundError(f"No files found in {file_list}")
     log.info(f"Files found: {len(file_list)} in {analyse_files} files")
 
-    seqs = hf.get_labels(
+    seqs = get_labels(
         file_list,
         cfg["labels"]["intro_notes"],
         cfg["labels"]["intro_notes_replacement"],
     )
 
-    cfg["data"]["bouts"], cfg["data"]["noise"] = hf.get_bouts(
+    cfg["data"]["bouts"], cfg["data"]["noise"] = get_bouts(
         seqs, cfg["labels"]["bout_chunk"]
     )
 
@@ -78,7 +79,7 @@ def get_data(cfg, analyse_files: str):
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
 
     log.info("Replacing chunks")
-    cfg["data"]["chunk_bouts"], cfg["labels"]["chunks_renamed"] = hf.replace_chunks(
+    cfg["data"]["chunk_bouts"], cfg["labels"]["chunks_renamed"] = replace_chunks(
         cfg["data"]["bouts_rep"], cfg["labels"]["chunks"]
     )
 
@@ -91,7 +92,7 @@ def make_first_plots(cfg):
     # unique_labels in bouts
     unique_labels = sorted(list(set(bouts)))
     log.info(f"Unique labels of Chunks from bouts_rep: {unique_labels}\n")
-    tm, _ = hf.get_transition_matrix(bouts, unique_labels)
+    tm, _ = get_transition_matrix(bouts, unique_labels)
 
     # U2 is the size of the strings in zeros
     label_matrix = np.zeros((len(unique_labels), len(unique_labels)), "U2")
@@ -134,8 +135,8 @@ def make_first_plots(cfg):
 
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd_no_shift = (tmd_no_shift.T / np.sum(tmd_no_shift, axis=1)).T
-    tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
-    tmpd_no_shift = hf.get_node_matrix(
+    tmpd = get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
+    tmpd_no_shift = get_node_matrix(
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
     )
 
@@ -194,7 +195,7 @@ def make_final_plots(cfg):
 
     log.info(f"Unique labels of Chunks: {unique_labels}\n")
     log.info(f"Label matrix:\n {label_matrix_check[:, 0]}")
-    tm, tmp = hf.get_transition_matrix(bouts, unique_labels)
+    tm, tmp = get_transition_matrix(bouts, unique_labels)
 
     # Filter out nodes with low occurrence
     k = np.where(
@@ -247,8 +248,8 @@ def make_final_plots(cfg):
     tmpd = (tm_sorted_shift.T / np.sum(tm_sorted_shift, axis=1)).T
     tmpd_no_shift = (tm_sorted_no_shift.T / np.sum(tm_sorted_no_shift, axis=1)).T
 
-    tmpd = hf.get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
-    tmpd_no_shift = hf.get_node_matrix(
+    tmpd = get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
+    tmpd_no_shift = get_node_matrix(
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
     )
     node_size = (

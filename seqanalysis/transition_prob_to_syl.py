@@ -3,8 +3,8 @@ import sys
 import glob
 import yaml
 import numpy as np
-import seqanalysis.util.plot_functions as pf
-import seqanalysis.util.helper_functions as hf
+import seqanalysis.util.plot_transition_diagram_functions as pf
+import seqanalysis.util.calc_matrix_transition_diagram as hf
 import matplotlib.pyplot as plt
 from IPython import embed
 
