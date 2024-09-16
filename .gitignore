@@ -1,2 +1,12 @@
 /figures
 /venv
+__pycache__/
+env
+*.pdf
+*.yaml
+!template.yaml
+!gr88gr06.yaml
+venv
+.idea
+.python-version
+

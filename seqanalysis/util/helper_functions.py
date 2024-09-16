@@ -1,7 +1,14 @@
 import glob
+import re
+import string
+
 import numpy as np
 import scipy.io as sio
-import re
+from IPython import embed
+
+from seqanalysis.util.logging import config_logging
+
+log = config_logging()
 
 
 def get_data(path, intro_notes, bout_chunk):
@@ -13,7 +20,7 @@ def get_data(path, intro_notes, bout_chunk):
     return bouts
 
 
-def get_labels(mat_list, notes):
+def get_labels(mat_list, notes, intro_replacement):
     """
     Extracts sequence labels from a list of .mat files.
 
@@ -26,16 +33,27 @@ def get_labels(mat_list, notes):
     """
     seqs = []
     for matidx in mat_list:
-        mat = sio.loadmat(matidx)
+        try:
+            mat = sio.loadmat(matidx)
+        except OSError:
+            log.error(f"File not found: {matidx}")
+            continue
+
 
         labels = mat['labels'][0]
         labels = '_' + labels
 
+        log.debug(f"Processing file: {matidx}")
+
+        labels = mat["labels"][0]
+        labels = "_" + labels
+
         if len(notes) > 0:
             try:
-                labels = replace_intro_notes(labels, notes)
-            except:
-                print(matidx)
+                labels = replace_intro_notes(labels, notes, intro_replacement)
+                log.debug(f"Intro notes replaced in file: {matidx}")
+            except ValueError:
+                log.error(f"Intro notes not found in file: {matidx} ")
 
         seqs.append(labels)
     seqs = np.array(seqs)
@@ -43,7 +61,7 @@ def get_labels(mat_list, notes):
     return seqs
 
 
-def replace_intro_notes(s, intro_notes):
+def replace_intro_notes(s, intro_notes, replacement):
     """
     Replaces introductory notes in a sequence.
 
@@ -55,19 +73,19 @@ def replace_intro_notes(s, intro_notes):
     - s (str): Sequence with replaced introductory notes.
     """
     unique_labels = sorted(list(set(s)))
-    for i in range(len(intro_notes)):
-        if intro_notes[i] in s:
-            unique_labels.remove(intro_notes[i])
+    for i, intro_note in enumerate(intro_notes):
+        if intro_note in s:
+            unique_labels.remove(intro_note)
 
     motiv_start = []
-    for i in range(len(unique_labels)):
-        motiv_start.append(s.find(unique_labels[i]))
+    for unique_label in unique_labels:
+        motiv_start.append(s.find(unique_label))
 
     temp = list(s)
     for i in range(1, np.min(motiv_start)):
-        temp[i] = 'i'
+        temp[i] = replacement[0]
 
-    s = ''.join(temp)
+    s = "".join(temp)
 
     return s
 
@@ -83,10 +101,13 @@ def replace_chunks(s, chunks):
     Returns:
     - s (str): Sequence with replaced chunks.
     """
-    for i in range(len(chunks)):
-        s = re.sub(chunks[i], chunks[i][0].upper(), s)
-
-    return s
+    asci_letters = list(string.ascii_uppercase)
+    ch = []
+    for i, chunk in enumerate(chunks):
+        log.info(f"Replacing chunk: {chunk}, with {asci_letters[i]}")
+        ch.append((chunk, asci_letters[i]))
+        s = re.sub(chunk, asci_letters[i], s)
+    return s, ch
 
 
 def get_syl_dur():
@@ -96,12 +117,12 @@ def get_syl_dur():
     Returns:
     - durs (numpy array): Array of syllable durations.
     """
-    mat_list = glob.glob('*cbin.not.mat')
+    mat_list = glob.glob("*cbin.not.mat")
     durs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
 
-        dur = mat['offsets'] - mat['onsets']
+        dur = mat["offsets"] - mat["onsets"]
         durs.append(dur)
 
     durs = np.array(durs)
@@ -116,12 +137,12 @@ def get_gap_dur():
     Returns:
     - durs (numpy array): Array of gap durations.
     """
-    mat_list = glob.glob('*cbin.not.mat')
+    mat_list = glob.glob("*cbin.not.mat")
     durs = []
     for matidx in mat_list:
         mat = sio.loadmat(matidx)
 
-        dur = mat['onsets'][1:] - mat['offsets'][:-1]
+        dur = mat["onsets"][1:] - mat["offsets"][:-1]
         durs.append(dur)
 
     durs = np.array(durs)
@@ -141,12 +162,13 @@ def get_bouts(seqs, bout_string):
     - bouts (str): Concatenated bouts.
     - noise (str): Concatenated non-bout sequences.
     """
-    bouts = ''
-    noise = ''
+    bouts = ""
+    noise = ""
     for seqsidx in range(len(seqs)):
         if seqs[seqsidx].find(bout_string) >= 0:
             bouts = bouts + seqs[seqsidx]
         elif seqs[seqsidx].find(bout_string) < 0:
+            log.debug(f"Sequence {seqsidx} is not a bout")
             noise = noise + seqs[seqsidx]
 
     return bouts, noise
@@ -164,6 +186,7 @@ def get_transition_matrix(bout, unique_labels):
     - transM (numpy array): Transition matrix.
     - transM_prob (numpy array): Transition probability matrix.
     """
+
     transM = np.zeros((len(unique_labels), len(unique_labels)))
     transM_prob = np.zeros((len(unique_labels), len(unique_labels)))
 
@@ -172,9 +195,9 @@ def get_transition_matrix(bout, unique_labels):
 
     for idx in range(len(numbers) - 1):
         transM[numbers[idx], numbers[idx + 1]] += 1
-        transM_prob[numbers[idx], numbers[idx + 1]] += 1
 
-    transM_prob = (transM_prob.T / np.sum(transM, axis=1)).T
+    # Normalize transition matrix
+    transM_prob = (transM.T / np.sum(transM, axis=1)).T
     transM = transM.astype(int)
 
     return transM, transM_prob
@@ -193,7 +216,9 @@ def get_transition_matrix_befor_following_syl(bout, unique_lables):
     - transM_prob_bsf (numpy array): Transition probability matrix.
     """
     transM_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
-    transM_prob_bsf = np.zeros((len(unique_lables), len(unique_lables), len(unique_lables)))
+    transM_prob_bsf = np.zeros(
+        (len(unique_lables), len(unique_lables), len(unique_lables))
+    )
     alphabet = {letter: index for index, letter in enumerate(unique_lables)}
     numbers = [alphabet[character] for character in bout if character in alphabet]
 
@@ -201,7 +226,8 @@ def get_transition_matrix_befor_following_syl(bout, unique_lables):
         transM_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
         transM_prob_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
 
-    transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
+    # BUG: Transition Maxtrix is not updated
+    # transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
     transM_bsf = transM_bsf.astype(int)
 
     return transM_bsf, transM_prob_bsf
@@ -225,6 +251,7 @@ def get_node_positions(source_target_list):
     pos = np.column_stack((xpos, np.array(ypos)))
 
     return pos
+
 
 def get_node_matrix(matrix, edge_thres):
     """
