@@ -5,15 +5,14 @@ import yaml
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import seqanalysis.util.plot_functions as pf
-import seqanalysis.util.helper_functions as hf
+from seqanalysis.util.calc_matrix_transition_diagram import get_transition_matrix, get_node_matrix
 
 from IPython import embed
 
 
 def get_matrix(bird):
     bouts = bird["data"]["chunk_bouts"]
-    tm, _ = hf.get_transition_matrix(bouts, bird["labels"]["unique_labels"])
+    tm, _ = get_transition_matrix(bouts, bird["labels"]["unique_labels"])
 
     # Filter out nodes with low occurrence
     k = np.where(np.sum(tm, axis=0) / np.sum(tm) * 100 <= 0.01)
@@ -23,7 +22,7 @@ def get_matrix(bird):
 
     # Normalize transition matrix and create node matrix
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
-    tmpd = hf.get_node_matrix(tmpd, bird["constants"]["edge_threshold"])
+    tmpd = get_node_matrix(tmpd, bird["constants"]["edge_threshold"])
 
     return tmd, tmpd
 
