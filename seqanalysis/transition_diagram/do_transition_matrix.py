@@ -25,13 +25,17 @@ def get_analyse_files_data(folder_path: pathlib.Path, analyse: str):
             log.error(f"File {analyse_file} does not exist, skipping folder")
             continue
         with open(analyse_file, "r") as file:
-            line_list = file.readlines()
-            file_list.extend(
-                [
-                    (analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
-                    for catch_song_file in line_list
-                ]
-            )
+            # line_list = file.readlines()
+            line_list = file.read().splitlines()
+            for catch_song_file in line_list:
+                if (analyse_file.parent / catch_song_file).suffix == '.wav':
+                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".wav.not.mat"))
+                elif (analyse_file.parent / catch_song_file).suffix == '.cbin':
+                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat"))
+                else:
+                    log.error(f"Unrecognisable file ending {(analyse_file.parent / catch_song_file).suffix}")
+            # file_list.extend([(analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
+            #                   for catch_song_file in line_list])
 
     return file_list
 
@@ -62,7 +66,7 @@ def get_data(cfg, analyse_files: str):
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
         for i, (double_syll, renamed_double_syll) in enumerate(
-            zip(cfg["labels"]["double_syl"], cfg["labels"]["double_syl_rep"])
+                zip(cfg["labels"]["double_syl"], cfg["labels"]["double_syl_rep"])
         ):
             log.info(f"Replacing {double_syll} with {renamed_double_syll}")
             cfg["data"]["bouts_rep"] = re.sub(
@@ -137,10 +141,10 @@ def make_first_plots(cfg):
 
     # "Plot Transition Matrix and Transition Diagram"
     node_size = (
-        np.round(
-            np.sum(tmpd_no_shift, axis=1) / np.max(np.sum(tmpd_no_shift, axis=1)), 2
-        )
-        * 500
+            np.round(
+                np.sum(tmpd_no_shift, axis=1) / np.max(np.sum(tmpd_no_shift, axis=1)), 2
+            )
+            * 500
     )
     # get them into the right order
     # nice labels
@@ -219,11 +223,11 @@ def make_final_plots(cfg):
         for sort in np.argsort(tm_sorted[i - 1])[::-1]:
             log.debug(sort)
             if sort not in _multiple_index:
-                log.debug(_multiple_index)
+                # log.debug(_multiple_index)
                 tm_sorted[i] = tmd[sort]
                 label_matrix_sorted[i] = label_matrix[sort]
                 _multiple_index.append(sort)
-                log.debug(_multiple_index)
+                # log.debug(_multiple_index)
                 break
             else:
                 continue
@@ -248,12 +252,13 @@ def make_final_plots(cfg):
         tmpd_no_shift, cfg["constants"]["edge_threshold"]
     )
     node_size = (
-        np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
-        * cfg["constants"]["node_size"]
+            np.round(np.sum(tmd_no_shift, axis=1) / np.min(np.sum(tmd_no_shift, axis=1)), 2)
+            * cfg["constants"]["node_size"]
     )
 
     xlabels = []
     ylabels = []
+
     for x, y in zip(label_matrix_shift[0, :], label_matrix_shift[:, 0]):
         renamedch = [ch[1] for ch in cfg["labels"]["chunks_renamed"]]
         ch = [ch[0] for ch in cfg["labels"]["chunks_renamed"]]
@@ -300,12 +305,10 @@ def make_final_plots(cfg):
 def main(yaml_file, analyse_files):
     with open(yaml_file) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
-        embed()
-        quit()
+
         if not cfg["data"]["bouts"]:
             cfg = get_data(cfg, analyse_files)
-
-        log.info("No bouts found in yaml file")
+            log.info("No bouts found in yaml file - created")
 
         if cfg["nonchunk_plot"]:
             make_first_plots(cfg)

@@ -31,22 +31,26 @@ def get_labels(mat_list, notes, intro_replacement):
     Returns:
     - seqs (numpy array): Array of sequence labels.
     """
+
     seqs = []
     for matidx in mat_list:
         try:
-            mat = sio.loadmat(matidx)
+            mat = sio.loadmat(str(matidx))
         except OSError:
             log.error(f"File not found: {matidx}")
             continue
 
+        if type(mat['labels']) == np.ndarray and type(mat['labels'][0]) == np.str_:
+            labels = mat['labels']
+            labels = '_' + ''.join(str(x) for x in labels)
+        elif type(mat['labels'][0]) == np.ndarray and type(mat['labels'][0][0]) == np.int32:
+            labels = mat['labels'][0]
+            labels = '_' + ''.join(str(x) for x in labels)
+        elif type(mat['labels'][0]) == np.str_:
+            labels = mat['labels'][0]
+            labels = '_' + labels
 
-        labels = mat['labels'][0]
-        labels = '_' + labels
-
-        log.debug(f"Processing file: {matidx}")
-
-        labels = mat["labels"][0]
-        labels = "_" + labels
+        # log.debug(f"Processing file: {matidx}")
 
         if len(notes) > 0:
             try:
@@ -74,8 +78,8 @@ def replace_intro_notes(s, intro_notes, replacement):
     """
     unique_labels = sorted(list(set(s)))
     for i, intro_note in enumerate(intro_notes):
-        if intro_note in s:
-            unique_labels.remove(intro_note)
+        if str(intro_note) in s:
+            unique_labels.remove(str(intro_note))
 
     motiv_start = []
     for unique_label in unique_labels:
@@ -101,12 +105,13 @@ def replace_chunks(s, chunks):
     Returns:
     - s (str): Sequence with replaced chunks.
     """
+
     asci_letters = list(string.ascii_uppercase)
     ch = []
     for i, chunk in enumerate(chunks):
         log.info(f"Replacing chunk: {chunk}, with {asci_letters[i]}")
-        ch.append((chunk, asci_letters[i]))
-        s = re.sub(chunk, asci_letters[i], s)
+        ch.append((str(chunk), asci_letters[i]))
+        s = re.sub(str(chunk), asci_letters[i], s)
     return s, ch
 
 
