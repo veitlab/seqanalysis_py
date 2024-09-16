@@ -31,24 +31,26 @@ def get_labels(mat_list, notes, intro_replacement):
     Returns:
     - seqs (numpy array): Array of sequence labels.
     """
-
+    embed()
+    quit()
     seqs = []
     for matidx in mat_list:
         try:
             mat = sio.loadmat(str(matidx))
+
+            if type(mat['labels']) == np.ndarray and type(mat['labels'][0]) == np.str_:
+                labels = mat['labels']
+                labels = '_' + ''.join(str(x) for x in labels)
+            elif type(mat['labels'][0]) == np.ndarray and type(mat['labels'][0][0]) == np.int32:
+                labels = mat['labels'][0]
+                labels = '_' + ''.join(str(x) for x in labels)
+            elif type(mat['labels'][0]) == np.str_:
+                labels = mat['labels'][0]
+                labels = '_' + labels
+
         except OSError:
             log.error(f"File not found: {matidx}")
             continue
-
-        if type(mat['labels']) == np.ndarray and type(mat['labels'][0]) == np.str_:
-            labels = mat['labels']
-            labels = '_' + ''.join(str(x) for x in labels)
-        elif type(mat['labels'][0]) == np.ndarray and type(mat['labels'][0][0]) == np.int32:
-            labels = mat['labels'][0]
-            labels = '_' + ''.join(str(x) for x in labels)
-        elif type(mat['labels'][0]) == np.str_:
-            labels = mat['labels'][0]
-            labels = '_' + labels
 
         # log.debug(f"Processing file: {matidx}")
 

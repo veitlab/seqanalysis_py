@@ -62,7 +62,7 @@ def get_data(cfg, analyse_files: str):
         seqs, cfg["labels"]["bout_chunk"]
     )
 
-    if cfg["labels"]["double_syl"] is None:
+    if cfg["labels"]["double_syl"] is not None:
         cfg["data"]["bouts_rep"] = cfg["data"]["bouts"]
         log.info("Replacing double syllables")
         for i, (double_syll, renamed_double_syll) in enumerate(
@@ -70,7 +70,7 @@ def get_data(cfg, analyse_files: str):
         ):
             log.info(f"Replacing {double_syll} with {renamed_double_syll}")
             cfg["data"]["bouts_rep"] = re.sub(
-                double_syll,
+                str(double_syll),
                 renamed_double_syll,
                 cfg["data"]["bouts_rep"],
             )
