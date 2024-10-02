@@ -64,8 +64,9 @@ def main(folder_path, syl, labels, bout_chunk):
     )
 
     counts, bins = np.histogram(folder_lengths, steps)
+    colors_7_orange = ["#070c0d", '#4f1300', "#a74c00", "#c25e00", "#d66b00", "#ff8500", "#5e575a"]
 
-    ax1.plot(bins[:-1], counts / np.sum(counts), label=labels, linewidth=4)
+    ax1.plot(bins[:-1], counts / np.sum(counts), label=labels, linewidth=4, color=colors_7_orange)
 
     ax1.set_xlabel("Repeat number", fontsize=25)
     ax1.set_ylabel("Rel. frequency", fontsize=25)

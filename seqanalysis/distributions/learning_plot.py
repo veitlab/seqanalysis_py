@@ -1,80 +1,69 @@
 import re
 import glob
+import pathlib
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-# from util.get_data_functions import get_catch_data
-from seqanalysis.util.get_data_transition_diagram import get_labels, get_bouts
+from seqanalysis.util.get_data_transition_diagram import get_labels, get_bouts, get_analyse_files_data
+from IPython import embed
 
 
-def get_catch_data(path, intro_notes, bout_chunk):
-    list = glob.glob(path)
+def get_catch_data(folder_path, analyse_files, intro_notes, bout_chunk):
 
-    file_list = []
-    for i in range(len(list)):
-        with open(list[i], 'r') as file:
-            line_list = file.readlines()
-            file_list.extend([list[i].rstrip('batch.notcatch') + item.rstrip() + '.not.mat' for item in line_list])
-
-    seqs = get_labels(file_list, intro_notes)
+    file_list = get_analyse_files_data(folder_path, analyse_files)
+    seqs = get_labels(file_list, intro_notes, 'i')
     bouts, _ = get_bouts(seqs, bout_chunk)
 
     return bouts
 
 
-def plot_sensitivity_bar_plot(syllable, always_syl, root_dir, folders, days, condition):
-
+def main(branch_syll, target_syll, always_syll, root_dir, folders, analyse_file, x_labels):
     # Apply a fancy colormap to the figure with the numbers of colors equal to the possible syllables
     cmap_jet = plt.get_cmap('jet')
-    colors = cmap_jet(np.linspace(0, 1, len(condition)))
+    colors = cmap_jet(np.linspace(0, 1, len(branch_syll)))
 
-    sensitivity_matrix = np.full([len(syllable), len(folders)], np.nan)
+    branching_from_syl_matrix = np.zeros([len(folders), len(branch_syll)])
+    for folder_idx in range(len(folders)):
+        folder_path = pathlib.Path(root_dir + folders[folder_idx])
+        bouts = get_catch_data(folder_path, analyse_file, ['_'], always_syll)
 
-    for folder_idx, folder in enumerate(folders):
-        bouts = get_catch_data(root_dir + folder, ['_'], always_syl)
-        for syl_idx, syl in enumerate(syllable):
-            all_syl = re.findall(syl, bouts)
-            sensitivity_matrix[syl_idx, folder_idx] = len(all_syl)
+        for trans_syl_idx in range(len(branch_syll)):
+            exp_occur = re.findall(target_syll + branch_syll[trans_syl_idx], bouts)
+            branching_from_syl_matrix[folder_idx, trans_syl_idx] = len(exp_occur)
 
-    sensitivity_matrix_percent = np.round(sensitivity_matrix / np.sum(sensitivity_matrix, axis=0) * 100, 2)
-    df = pd.DataFrame(sensitivity_matrix_percent.T, columns=condition)
-    df.insert(0, 'days', days, True)
-    fig, ax = plt.subplots(1, 1, figsize=(21 / 2.54, 12 / 2.54))
-    fig.subplots_adjust(left=0.13, bottom=0.18, top=0.99, right=0.94, wspace=0.5, hspace=0.7)
+    matrix_prob = (branching_from_syl_matrix.T / np.sum(branching_from_syl_matrix, axis=1)).T * 100
 
-    df.plot(x='days',
-            kind='bar',
-            stacked=True,
-            color=colors,
-            ax=ax)
+    fig1, ax1 = plt.subplots(1, 1, figsize=(21 / 2.54, 12 / 2.54))
+    fig1.subplots_adjust(left=0.13, bottom=0.18, top=0.99, right=0.94, wspace=0.5, hspace=0.7)
 
-    ax.set_xlabel('training day')
-    ax.set_ylabel('probability [%]')
+    for plot_idx in range(len(branch_syll)):
+        ax1.plot(range(len(folders)), matrix_prob[:, plot_idx],
+                 label=target_syll + branch_syll[plot_idx], marker='o', linewidth=4, color=colors[plot_idx])
+
+    ax1.set_xticks(range(len(folders)), x_labels)
+    ax1.set_ylabel('probability [%]')
+
     plt.legend()
 
-    return fig
+    return fig1
 
 
 if __name__ == "__main__":
+    file_path_glob = 'C:/Users/User/Documents/Doktorarbeit/data/'
+    file_path_save = 'C:/Users/User/Documents/Doktorarbeit/data/Franzi/figures/'
 
-    file_path_glob = 'C:/Users/User/Documents/Doktorarbeit/data/bu02bk02/'
-    file_path_save = 'C:/Users/User/Documents/Doktorarbeit/project2_repeats/bu02bk02/figures/'
+    data_folders = ['Franzi/']
 
-    folders = ['/exp1_b4+_WN/240507/batch.notcatch',
-               '/exp1_b4+_WN/240508/batch.notcatch',
-               '/exp1_b4+_WN/240509/batch.notcatch',
-               '/exp1_b4+_WN/240510/batch.notcatch']
-
-    x_axis_labels = ['T1', 'T2', 'T3', 'T4']
+    x_axis_labels = ['pre']
 
     # this syllable is in every song file you want to analyse (is from the do_transition_matrix: bout_chunk)
-    always_syl = 'd'
+    always_syl = '4'
     # use regular expressions to find the branch point
-    syllable = ['dccb{,3}w+', 'dccb{4,}(?!w)']
+    target_syl = '23'
+    branch_syl = ['2', '(?!2).']
 
-    line_labels = ['WN', '*']
+    fig = main(branch_syl, target_syl, always_syl, file_path_glob, data_folders, 'keep', x_axis_labels)
 
-    fig2 = plot_sensitivity_bar_plot(syllable, always_syl, file_path_glob, folders, x_axis_labels, line_labels)
+    fig.savefig(f'{file_path_save}trans_prob_from_[ef]b.svg')
+    fig.savefig(f'{file_path_save}trans_prob_from_[ef]b.png')
 
-    fig2.savefig(f'{file_path_save}sensitivity_bar_plot.svg')
     plt.show()

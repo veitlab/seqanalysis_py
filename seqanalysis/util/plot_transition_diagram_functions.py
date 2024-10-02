@@ -10,7 +10,7 @@ log = config_logging()
 plt.rcParams["svg.fonttype"] = (
     "none"  # this is so that svg figures save text as text and not the single letters
 )
-
+plt.rcParams['font.size'] = 18
 
 def plot_transition_matrix(matrix, labelx, labely, save_path, title):
     """
@@ -79,7 +79,7 @@ def plot_transition_diagram(matrix, labels, node_size, edge_width, save_path, ti
         Graph,
         pos=positions,
         node_size=node_size,
-        node_color="tab:orange",
+        node_color="a7d7dd",
         ax=ax,
         alpha=0.9,
     )

@@ -1,6 +1,6 @@
 import re
 import string
-
+import pathlib
 import numpy as np
 import scipy.io as sio
 from IPython import embed
@@ -8,6 +8,32 @@ from IPython import embed
 from seqanalysis.util.logging import config_logging
 
 log = config_logging()
+
+
+def get_analyse_files_data(folder_path: pathlib.Path, analyse: str):
+    file_list = []
+    analyse_files = list(folder_path.glob(f"**/*{analyse}"))
+    if not analyse_files:
+        log.error(f"No catch files found in {folder_path}")
+        FileNotFoundError(f"No catch files found in {folder_path}")
+    for analyse_file in analyse_files:
+        if not analyse_file.exists():
+            log.error(f"File {analyse_file} does not exist, skipping folder")
+            continue
+        with open(analyse_file, "r") as file:
+            # line_list = file.readlines()
+            line_list = file.read().splitlines()
+            for catch_song_file in line_list:
+                if (analyse_file.parent / catch_song_file).suffix == '.wav':
+                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".wav.not.mat"))
+                elif (analyse_file.parent / catch_song_file).suffix == '.cbin':
+                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat"))
+                else:
+                    log.error(f"Unrecognisable file ending {(analyse_file.parent / catch_song_file).suffix}")
+            # file_list.extend([(analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
+            #                   for catch_song_file in line_list])
+
+    return file_list
 
 
 def get_labels(mat_list, notes, intro_replacement):

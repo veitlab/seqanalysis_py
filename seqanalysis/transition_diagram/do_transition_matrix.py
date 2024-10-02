@@ -7,38 +7,12 @@ import numpy as np
 import yaml
 from IPython import embed
 
-from seqanalysis.util.get_data_transition_diagram import get_labels, get_bouts, replace_chunks
+from seqanalysis.util.get_data_transition_diagram import get_labels, get_bouts, replace_chunks, get_analyse_files_data
 from seqanalysis.util.calc_matrix_transition_diagram import get_transition_matrix, get_node_matrix
 import seqanalysis.util.plot_transition_diagram_functions as pf
 from seqanalysis.util.logging import config_logging
 
 log = config_logging()
-
-
-def get_analyse_files_data(folder_path: pathlib.Path, analyse: str):
-    file_list = []
-    analyse_files = list(folder_path.glob(f"**/*{analyse}"))
-    if not analyse_files:
-        log.error(f"No catch files found in {folder_path}")
-        FileNotFoundError(f"No catch files found in {folder_path}")
-    for analyse_file in analyse_files:
-        if not analyse_file.exists():
-            log.error(f"File {analyse_file} does not exist, skipping folder")
-            continue
-        with open(analyse_file, "r") as file:
-            # line_list = file.readlines()
-            line_list = file.read().splitlines()
-            for catch_song_file in line_list:
-                if (analyse_file.parent / catch_song_file).suffix == '.wav':
-                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".wav.not.mat"))
-                elif (analyse_file.parent / catch_song_file).suffix == '.cbin':
-                    file_list.append((analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat"))
-                else:
-                    log.error(f"Unrecognisable file ending {(analyse_file.parent / catch_song_file).suffix}")
-            # file_list.extend([(analyse_file.parent / catch_song_file).with_suffix(".cbin.not.mat")
-            #                   for catch_song_file in line_list])
-
-    return file_list
 
 
 def get_data(cfg, analyse_files: str):
@@ -135,10 +109,9 @@ def make_first_plots(cfg):
 
     tmpd = (tmd.T / np.sum(tmd, axis=1)).T
     tmpd_no_shift = (tmd_no_shift.T / np.sum(tmd_no_shift, axis=1)).T
-    tmpd = get_node_matrix(tmpd, cfg["constants"]["edge_threshold"])
+    tmpd = get_node_matrix(tmpd, 0)
     tmpd_no_shift = get_node_matrix(
-        tmpd_no_shift, cfg["constants"]["edge_threshold"]
-    )
+        tmpd_no_shift, 0)
 
     # "Plot Transition Matrix and Transition Diagram"
     node_size = (
