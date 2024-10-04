@@ -63,8 +63,7 @@ def get_transition_matrix_befor_following_syl(bout, unique_lables):
         transM_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
         transM_prob_bsf[numbers[idx - 1], numbers[idx], numbers[idx + 1]] += 1
 
-    # BUG: Transition Maxtrix is not updated
-    # transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
+    transM_prob_bsf = (transM_prob_bsf.T / np.sum(transM_bsf, axis=1)).T
     transM_bsf = transM_bsf.astype(int)
 
     return transM_bsf, transM_prob_bsf
