@@ -37,7 +37,7 @@ labels:
   - kfg
   - fg
   # chunks_renamed: dont edit!!, this is automatically generated 
-  # IN A NEW TEMPLATE THIS MUST BE REMOVED
+  # IN A NEW TEMPLATE THIS MUST BE REMOVED WHEN RERUN THE YAML
   chunks_renamed:
   - !!python/tuple
     - x+
@@ -89,4 +89,5 @@ paths:
   # save_path: where the figures should be saved, !!! last slash is very important !!!
   save_path: C:/Users/User/Documents/Doktorarbeit/data/bu01ye01/py_data/
 # title_figures: title for both figures is the same
+Resources:
 title_figures: bu01ye01_postsurgery
